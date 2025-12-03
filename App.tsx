@@ -12,49 +12,91 @@ import AssessmentModal from './components/AssessmentModal';
 import PricingModal from './components/PricingModal';
 import AlertModal from './components/AlertModal';
 import { generateRoadmap, generatePracticeProject, generateLevelDetails, extendRoadmap } from './services/geminiService';
+import { auth } from './services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { saveUser, getUser, saveRoadmaps, getRoadmaps } from './services/db';
 import { CareerRoadmap, Level, ProjectTask, UserProfile, Assessment } from './types';
 
+
 function App() {
-  // 1. Initialize State from LocalStorage (The "Database")
-  const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('simSkill_user');
-    return saved ? JSON.parse(saved) : {
-      isLoggedIn: false,
-      name: '',
-      email: '',
-      isPro: false,
-      xp: 0,
-      streak: 1,
-      level: 1,
-      completedProjects: [],
-      joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    };
+  // 1. Initialize State
+  const [user, setUser] = useState<UserProfile>({
+    isLoggedIn: false,
+    name: '',
+    email: '',
+    isPro: false,
+    xp: 0,
+    streak: 1,
+    level: 1,
+    completedProjects: [],
+    joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   });
 
-  const [roadmaps, setRoadmaps] = useState<CareerRoadmap[]>(() => {
-    const saved = localStorage.getItem('simSkill_roadmaps');
-    let loaded: CareerRoadmap[] = saved ? JSON.parse(saved) : [];
-    
-    // Legacy Data Patch: If roadmap has no ID, give it one.
-    // This fixes the issue where old roadmaps couldn't be deleted.
-    const patched = loaded.map(r => {
-        if (!r.id) {
-            return { ...r, id: `legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` };
-        }
-        return r;
-    });
-    
-    return patched;
-  });
+  const [roadmaps, setRoadmaps] = useState<CareerRoadmap[]>([]);
 
-  // 2. Persistence Hooks (Auto-Save)
+  // 2. Auth & Data Sync
   useEffect(() => {
-    localStorage.setItem('simSkill_user', JSON.stringify(user));
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // User is signed in
+        const email = currentUser.email || '';
+        const name = currentUser.displayName || email.split('@')[0];
+
+        // Fetch user data
+        const savedUser = await getUser(email);
+        if (savedUser) {
+          setUser({ ...savedUser, isLoggedIn: true });
+        } else {
+          // New user, save initial profile
+          const newUser = {
+            ...user,
+            isLoggedIn: true,
+            name,
+            email,
+            joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+          };
+          setUser(newUser);
+          saveUser(newUser);
+        }
+
+        // Fetch roadmaps
+        const savedRoadmaps = await getRoadmaps(email);
+        setRoadmaps(savedRoadmaps);
+
+      } else {
+        // User is signed out
+        setUser({
+          isLoggedIn: false,
+          name: '',
+          email: '',
+          isPro: false,
+          xp: 0,
+          streak: 1,
+          level: 1,
+          completedProjects: [],
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+        });
+        setRoadmaps([]);
+        setView('dashboard');
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // 3. Persistence (Save on Change)
+  useEffect(() => {
+    if (user.isLoggedIn && user.email) {
+      saveUser(user);
+    }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('simSkill_roadmaps', JSON.stringify(roadmaps));
+    if (user.isLoggedIn && user.email) {
+      saveRoadmaps(user.email, roadmaps);
+    }
   }, [roadmaps]);
+
 
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
 
@@ -67,7 +109,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("CONSTRUCTING ROADMAP");
   const [isDetailLoading, setIsDetailLoading] = useState(false);
-  
+
   // Modal State
   const [showAuth, setShowAuth] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
@@ -90,34 +132,16 @@ function App() {
   };
 
   const handleLogin = (name: string, email: string) => {
-    setUser(prev => ({ ...prev, isLoggedIn: true, name, email }));
+    // Auth state listener handles the state update
     setShowAuth(false);
-    
-    // If they have roadmaps, go to dashboard, else ask for one
-    if (roadmaps.length > 0) {
-        setView('dashboard');
-    } else {
-        setShowAssessment(true);
-    }
   };
 
+
   const handleLogout = () => {
-    setUser({
-        isLoggedIn: false,
-        name: '',
-        email: '',
-        isPro: false,
-        xp: 0,
-        streak: 1,
-        level: 1,
-        completedProjects: [],
-        joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
-    });
-    setRoadmaps([]);
-    setView('dashboard');
-    localStorage.removeItem('simSkill_user');
-    localStorage.removeItem('simSkill_roadmaps');
+    auth.signOut();
+    // State reset is handled by onAuthStateChanged
   };
+
 
   const handleAssessmentComplete = async (assessment: Assessment, career: string) => {
     setShowAssessment(false);
@@ -145,20 +169,20 @@ function App() {
   const handleProjectComplete = (xpEarned: number) => {
     // Add XP and update project counts
     if (activeProject && !user.completedProjects.includes(activeProject.id)) {
-        setUser(prev => ({ 
-            ...prev, 
-            xp: prev.xp + xpEarned, 
-            completedProjects: [...prev.completedProjects, activeProject.id],
-            // Simple level up logic: every 1000 XP
-            level: Math.floor((prev.xp + xpEarned) / 1000) + 1
-        }));
+      setUser(prev => ({
+        ...prev,
+        xp: prev.xp + xpEarned,
+        completedProjects: [...prev.completedProjects, activeProject.id],
+        // Simple level up logic: every 1000 XP
+        level: Math.floor((prev.xp + xpEarned) / 1000) + 1
+      }));
     } else {
-        // Practice mode or re-doing project gives raw XP
-         setUser(prev => ({ 
-            ...prev, 
-            xp: prev.xp + xpEarned,
-            level: Math.floor((prev.xp + xpEarned) / 1000) + 1
-        }));
+      // Practice mode or re-doing project gives raw XP
+      setUser(prev => ({
+        ...prev,
+        xp: prev.xp + xpEarned,
+        level: Math.floor((prev.xp + xpEarned) / 1000) + 1
+      }));
     }
     setActiveProject(null);
     setGradingLevelContext(null);
@@ -170,30 +194,30 @@ function App() {
 
     // If level details are missing (lazy load), fetch them now
     if (!level.teaching || !level.projects) {
-        if(!currentRoadmap) return;
-        setIsDetailLoading(true);
-        try {
-            const details = await generateLevelDetails(level.title, currentRoadmap.careerTitle, level.topics);
-            
-            // Update the roadmap with the new details so we don't fetch again
-            const updatedLevel = { ...level, ...details };
-            setSelectedLevel(updatedLevel); // Update modal view immediately
+      if (!currentRoadmap) return;
+      setIsDetailLoading(true);
+      try {
+        const details = await generateLevelDetails(level.title, currentRoadmap.careerTitle, level.topics);
 
-            setRoadmaps(prev => prev.map(r => {
-                if (r.id === currentRoadmap.id) {
-                    return {
-                        ...r,
-                        levels: r.levels.map(l => l.id === level.id ? updatedLevel : l)
-                    };
-                }
-                return r;
-            }));
+        // Update the roadmap with the new details so we don't fetch again
+        const updatedLevel = { ...level, ...details };
+        setSelectedLevel(updatedLevel); // Update modal view immediately
 
-        } catch (error) {
-            console.error("Failed to fetch level details");
-        } finally {
-            setIsDetailLoading(false);
-        }
+        setRoadmaps(prev => prev.map(r => {
+          if (r.id === currentRoadmap.id) {
+            return {
+              ...r,
+              levels: r.levels.map(l => l.id === level.id ? updatedLevel : l)
+            };
+          }
+          return r;
+        }));
+
+      } catch (error) {
+        console.error("Failed to fetch level details");
+      } finally {
+        setIsDetailLoading(false);
+      }
     }
   };
 
@@ -206,10 +230,10 @@ function App() {
       // Append to specific roadmap
       setRoadmaps(prev => prev.map(r => {
         if (r.id === currentRoadmap.id) {
-            return {
-                ...r,
-                extraProjects: [newProject, ...(r.extraProjects || [])]
-            };
+          return {
+            ...r,
+            extraProjects: [newProject, ...(r.extraProjects || [])]
+          };
         }
         return r;
       }));
@@ -223,8 +247,8 @@ function App() {
   const handleUnenroll = (id: string) => {
     setRoadmaps(prev => prev.filter(r => r.id !== id));
     if (activeRoadmapId === id) {
-        setActiveRoadmapId(null);
-        setView('dashboard');
+      setActiveRoadmapId(null);
+      setView('dashboard');
     }
   };
 
@@ -233,20 +257,20 @@ function App() {
     setLoading(true);
     setLoadingText("EXPANDING ARCHITECTURE");
     try {
-        const newLevels = await extendRoadmap(currentRoadmap);
-        setRoadmaps(prev => prev.map(r => {
-            if (r.id === currentRoadmap.id) {
-                return {
-                    ...r,
-                    levels: [...r.levels, ...newLevels]
-                };
-            }
-            return r;
-        }));
+      const newLevels = await extendRoadmap(currentRoadmap);
+      setRoadmaps(prev => prev.map(r => {
+        if (r.id === currentRoadmap.id) {
+          return {
+            ...r,
+            levels: [...r.levels, ...newLevels]
+          };
+        }
+        return r;
+      }));
     } catch (error) {
-        alert("Failed to extend roadmap.");
+      alert("Failed to extend roadmap.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -259,7 +283,7 @@ function App() {
       </div>
 
       <div className="relative z-10">
-        
+
         {/* Modals */}
         {showAuth && <AuthModal onLogin={handleLogin} onClose={() => setShowAuth(false)} />}
         {showAssessment && <AssessmentModal onComplete={handleAssessmentComplete} onCancel={() => setShowAssessment(false)} />}
@@ -273,33 +297,33 @@ function App() {
         )}
 
         {user.isLoggedIn && view === 'dashboard' && !loading && (
-          <Dashboard 
-            user={user} 
+          <Dashboard
+            user={user}
             roadmaps={roadmaps}
             onResume={(id) => {
-                setActiveRoadmapId(id);
-                setView('roadmap');
+              setActiveRoadmapId(id);
+              setView('roadmap');
             }}
-            onNewPath={() => setShowAssessment(true)} 
-            onUpgrade={() => setShowPricing(true)} 
+            onNewPath={() => setShowAssessment(true)}
+            onUpgrade={() => setShowPricing(true)}
             onProfile={() => setView('profile')}
           />
         )}
 
         {user.isLoggedIn && view === 'profile' && !loading && (
-            <ProfileView 
-                user={user} 
-                onUpdate={setUser} 
-                onBack={() => setView('dashboard')} 
-                onLogout={handleLogout}
-            />
+          <ProfileView
+            user={user}
+            onUpdate={setUser}
+            onBack={() => setView('dashboard')}
+            onLogout={handleLogout}
+          />
         )}
 
         {user.isLoggedIn && view === 'roadmap' && currentRoadmap && !loading && (
-          <RoadmapView 
-            roadmap={currentRoadmap} 
+          <RoadmapView
+            roadmap={currentRoadmap}
             user={user}
-            onSelectLevel={handleLevelSelect} 
+            onSelectLevel={handleLevelSelect}
             onBack={() => setView('dashboard')}
             onUpgrade={() => setShowPricing(true)}
             onGeneratePractice={handleGeneratePractice}
@@ -322,21 +346,21 @@ function App() {
         )}
 
         {selectedLevel && !activeProject && (
-          <LevelDetail 
-            level={selectedLevel} 
+          <LevelDetail
+            level={selectedLevel}
             isLoading={isDetailLoading}
             completedProjectIds={user.completedProjects}
-            onClose={() => setSelectedLevel(null)} 
+            onClose={() => setSelectedLevel(null)}
             onStartProject={(p) => {
-                setActiveProject(p);
-                setGradingLevelContext(selectedLevel);
-            }} 
+              setActiveProject(p);
+              setGradingLevelContext(selectedLevel);
+            }}
           />
         )}
 
         {activeProject && gradingLevelContext && (
-          <ProjectGrader 
-            project={activeProject} 
+          <ProjectGrader
+            project={activeProject}
             level={gradingLevelContext}
             onClose={() => setActiveProject(null)}
             onComplete={handleProjectComplete}

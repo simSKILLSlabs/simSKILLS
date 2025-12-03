@@ -35,7 +35,7 @@ export interface Level {
   description: string;
   topics: string[];
   // These are now optional for Lazy Loading
-  teaching?: TeachingModule; 
+  teaching?: TeachingModule;
   resources?: Resource[];
   projects?: ProjectTask[];
   isLocked?: boolean;
