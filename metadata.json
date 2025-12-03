@@ -1,0 +1,5 @@
+{
+  "name": "SimSKILLS v1",
+  "description": "An AI-powered career path simulator and roadmap generator for Computer Science fields. Features interactive roadmaps, curated resources, project assignments, and automated grading with feedback.",
+  "requestFramePermissions": []
+}
