@@ -15,7 +15,7 @@ import { generateRoadmap, generatePracticeProject, generateLevelDetails, extendR
 import { auth } from './services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { saveUser, getUser, saveRoadmaps, getRoadmaps } from './services/db';
-import { CareerRoadmap, Level, ProjectTask, UserProfile, Assessment } from './types';
+import { CareerRoadmap, Level, ProjectTask, UserProfile, Assessment, GradingResult } from './types';
 
 
 function App() {
@@ -29,6 +29,7 @@ function App() {
     streak: 1,
     level: 1,
     completedProjects: [],
+    projectHistory: [],
     joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
   });
 
@@ -74,6 +75,7 @@ function App() {
           streak: 1,
           level: 1,
           completedProjects: [],
+          projectHistory: [],
           joinedDate: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
         });
         setRoadmaps([]);
@@ -114,6 +116,7 @@ function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [showAssessment, setShowAssessment] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
+  const [pricingMessage, setPricingMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Helper: Get Current Roadmap
@@ -137,7 +140,10 @@ function App() {
   };
 
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    if (user.email) {
+      await saveUser({ ...user, isLoggedIn: false });
+    }
     auth.signOut();
     // State reset is handled by onAuthStateChanged
   };
@@ -164,9 +170,10 @@ function App() {
   const handleSubscriptionSelect = (isPro: boolean) => {
     setUser(prev => ({ ...prev, isPro }));
     setShowPricing(false);
+    setPricingMessage(null);
   };
 
-  const handleProjectComplete = (xpEarned: number) => {
+  const handleProjectComplete = (xpEarned: number, result?: GradingResult) => {
     // Add XP and update project counts
     if (activeProject && !user.completedProjects.includes(activeProject.id)) {
       setUser(prev => ({
@@ -184,6 +191,22 @@ function App() {
         level: Math.floor((prev.xp + xpEarned) / 1000) + 1
       }));
     }
+
+    // Save Grading History
+    if (result && activeProject) {
+      const historyItem: any = {
+        ...result,
+        projectId: activeProject.id,
+        projectTitle: activeProject.title,
+        timestamp: Date.now()
+      };
+
+      setUser(prev => ({
+        ...prev,
+        projectHistory: [historyItem, ...(prev.projectHistory || [])]
+      }));
+    }
+
     setActiveProject(null);
     setGradingLevelContext(null);
   };
@@ -287,7 +310,7 @@ function App() {
         {/* Modals */}
         {showAuth && <AuthModal onLogin={handleLogin} onClose={() => setShowAuth(false)} />}
         {showAssessment && <AssessmentModal onComplete={handleAssessmentComplete} onCancel={() => setShowAssessment(false)} />}
-        {showPricing && <PricingModal onSelect={handleSubscriptionSelect} onClose={() => setShowPricing(false)} />}
+        {showPricing && <PricingModal onSelect={handleSubscriptionSelect} onClose={() => { setShowPricing(false); setPricingMessage(null); }} message={pricingMessage} />}
         {errorMessage && <AlertModal message={errorMessage} onClose={() => setErrorMessage(null)} />}
         {loading && <Loader text={loadingText} />}
 
@@ -304,8 +327,18 @@ function App() {
               setActiveRoadmapId(id);
               setView('roadmap');
             }}
-            onNewPath={() => setShowAssessment(true)}
-            onUpgrade={() => setShowPricing(true)}
+            onNewPath={() => {
+              if (!user.isPro && roadmaps.length >= 2) {
+                setPricingMessage("You have reached the limit of 2 active simulations. Upgrade to Pro for unlimited access.");
+                setShowPricing(true);
+              } else {
+                setShowAssessment(true);
+              }
+            }}
+            onUpgrade={(msg) => {
+              if (typeof msg === 'string') setPricingMessage(msg);
+              setShowPricing(true);
+            }}
             onProfile={() => setView('profile')}
           />
         )}
@@ -325,7 +358,10 @@ function App() {
             user={user}
             onSelectLevel={handleLevelSelect}
             onBack={() => setView('dashboard')}
-            onUpgrade={() => setShowPricing(true)}
+            onUpgrade={(msg) => {
+              if (typeof msg === 'string') setPricingMessage(msg);
+              setShowPricing(true);
+            }}
             onGeneratePractice={handleGeneratePractice}
             onSelectPractice={(p) => {
               setActiveProject(p);

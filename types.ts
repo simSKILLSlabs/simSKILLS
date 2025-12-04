@@ -67,6 +67,12 @@ export interface GradingResult {
   };
 }
 
+export interface ProjectHistoryItem extends GradingResult {
+  projectId: string;
+  projectTitle: string;
+  timestamp: number;
+}
+
 export interface UserProfile {
   isLoggedIn: boolean;
   name: string;
@@ -78,6 +84,7 @@ export interface UserProfile {
   streak: number;
   level: number;
   completedProjects: string[]; // Project IDs
+  projectHistory: ProjectHistoryItem[]; // Past grades
   joinedDate?: string;
 }
 
