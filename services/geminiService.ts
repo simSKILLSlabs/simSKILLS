@@ -4,7 +4,7 @@ import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { CareerRoadmap, GradingResult, Level, ProjectTask, Assessment, Challenge } from "../types";
 
 // Initialize Gemini Client
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
 
 // 1. LIGHTWEIGHT SKELETON SCHEMA (Fast Generation)
 const roadmapSkeletonSchema: Schema = {
