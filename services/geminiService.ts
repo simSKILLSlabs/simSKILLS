@@ -1,5 +1,7 @@
+
+// ... (Existing Imports)
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { CareerRoadmap, GradingResult, Level, ProjectTask, Assessment } from "../types";
+import { CareerRoadmap, GradingResult, Level, ProjectTask, Assessment, Challenge } from "../types";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -37,7 +39,7 @@ const levelDetailsSchema: Schema = {
     teaching: {
       type: Type.OBJECT,
       properties: {
-        conceptExplanation: { type: Type.STRING, description: "Detailed explanation of what the topic is." },
+        conceptExplanation: { type: Type.STRING, description: "Detailed explanation of the topic." },
         practicalGuide: { type: Type.STRING, description: "Step-by-step summary on how to actually do/implement it." },
         keyTakeaway: { type: Type.STRING }
       },
@@ -50,8 +52,10 @@ const levelDetailsSchema: Schema = {
         properties: {
           title: { type: Type.STRING },
           type: { type: Type.STRING, enum: ["video", "article", "course"] },
+          url: { type: Type.STRING, description: "A VALID, REAL URL to a top-quality YouTube video or official documentation. Do NOT make up fake URLs." },
           description: { type: Type.STRING }
-        }
+        },
+        required: ["title", "type", "description", "url"]
       }
     },
     projects: {
@@ -73,13 +77,13 @@ const levelDetailsSchema: Schema = {
 
 export const generateRoadmap = async (career: string, assessment: Assessment, isPro: boolean): Promise<CareerRoadmap> => {
   const modelId = "gemini-2.5-flash";
-  
+
   // Skeleton generation is much faster
   const levelCount = isPro ? "15 to 20" : "5";
-  const focus = isPro 
-    ? "extremely granular, slow-paced, deeply detailed progression." 
+  const focus = isPro
+    ? "extremely granular, slow-paced, deeply detailed progression."
     : "general overview, fast-track";
-  
+
   const prompt = `Create a structured career learning roadmap skeleton for a student wanting to become a "${career}".
   
   CRITICAL DOMAIN VALIDATION: 
@@ -124,21 +128,21 @@ export const generateRoadmap = async (career: string, assessment: Assessment, is
 
     const text = response.text;
     if (!text) throw new Error("No response from Gemini");
-    
+
     // Parse partial response to check validity
     const rawData = JSON.parse(text);
 
     if (rawData.isValid === false) {
-        throw new Error(rawData.validationMessage || "Invalid career path. Please enter a technology-related field.");
+      throw new Error(rawData.validationMessage || "Invalid career path. Please enter a technology-related field.");
     }
-    
+
     const data = rawData as CareerRoadmap;
-    
+
     // Assign Client-side properties
     data.id = crypto.randomUUID();
     data.createdAt = Date.now();
     data.extraProjects = [];
-    
+
     return data;
 
   } catch (error) {
@@ -171,7 +175,7 @@ const extensionSchema: Schema = {
 export const extendRoadmap = async (currentRoadmap: CareerRoadmap): Promise<Level[]> => {
   const modelId = "gemini-2.5-flash";
   const lastLevelId = currentRoadmap.levels[currentRoadmap.levels.length - 1].id;
-  
+
   const prompt = `
   The user has upgraded to PRO. Extend the existing career roadmap for "${currentRoadmap.careerTitle}".
   
@@ -187,7 +191,7 @@ export const extendRoadmap = async (currentRoadmap: CareerRoadmap): Promise<Leve
   `;
 
   try {
-     const response = await ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: modelId,
       contents: prompt,
       config: {
@@ -198,7 +202,7 @@ export const extendRoadmap = async (currentRoadmap: CareerRoadmap): Promise<Leve
 
     const text = response.text;
     if (!text) throw new Error("No extension generated");
-    
+
     const data = JSON.parse(text) as { levels: Level[] };
     return data.levels;
   } catch (error) {
@@ -220,12 +224,15 @@ export const generateLevelDetails = async (levelTitle: string, careerTitle: stri
      - 'conceptExplanation': Clear, in-depth explanation of the concepts.
      - 'practicalGuide': A "How-To" guide on implementing this concept in code.
      - 'keyTakeaway': One sentence summary.
-  2. **Resources**: 3 curated high-quality resource search queries (Videos/Articles).
+  2. **Resources**: 
+     - 2 High-Quality Video Links (YouTube). MUST be real, popular tutorials from channels like Traversy Media, Fireship, Net Ninja, FreeCodeCamp, etc.
+     - 2 High-Quality Article/Doc Links (MDN, Official Docs, Dev.to).
+     - **CRITICAL**: The 'url' field MUST be a valid https URL. Do not guess links. If unsure, use a generic search link like "https://www.youtube.com/results?search_query=..."
   3. **Projects**: 2 distinct, hands-on coding tasks to verify skills.
   `;
 
   try {
-     const response = await ai.models.generateContent({
+    const response = await ai.models.generateContent({
       model: modelId,
       contents: prompt,
       config: {
@@ -236,15 +243,15 @@ export const generateLevelDetails = async (levelTitle: string, careerTitle: stri
 
     const text = response.text;
     if (!text) throw new Error("No details generated");
-    
+
     const data = JSON.parse(text) as Partial<Level>;
 
     // Ensure unique IDs for projects to track completion accurately based on career and level
     if (data.projects) {
-        data.projects = data.projects.map((p, i) => ({
-            ...p,
-            id: `${careerTitle.substring(0,5).toLowerCase()}-${levelTitle.substring(0,5).toLowerCase()}-${i}-${Date.now().toString().slice(-6)}`.replace(/[^a-z0-9-]/g, '')
-        }));
+      data.projects = data.projects.map((p, i) => ({
+        ...p,
+        id: `${careerTitle.substring(0, 5).toLowerCase()}-${levelTitle.substring(0, 5).toLowerCase()}-${i}`.replace(/[^a-z0-9-]/g, '')
+      }));
     }
 
     return data;
@@ -363,10 +370,75 @@ export const generatePracticeProject = async (
 
     const data = JSON.parse(text) as ProjectTask;
     // Overwrite ID to ensure uniqueness for practice projects
-    data.id = `practice-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+    data.id = `practice-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     return data;
   } catch (error) {
     console.error("Practice Project Error:", error);
+    throw error;
+  }
+};
+
+// --- DAILY CHALLENGE ---
+
+const dailyChallengeSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    type: { type: Type.STRING, enum: ["quiz", "bug-fix"] },
+    question: { type: Type.STRING },
+    // Only for quiz
+    options: { type: Type.ARRAY, items: { type: Type.STRING } },
+    // Only for bug-fix
+    codeSnippet: { type: Type.STRING },
+
+    correctAnswer: { type: Type.STRING },
+    explanation: { type: Type.STRING },
+    difficulty: { type: Type.STRING, enum: ["Easy", "Medium", "Hard"] },
+    xpAward: { type: Type.INTEGER }
+  },
+  required: ["type", "question", "correctAnswer", "explanation", "difficulty", "xpAward"]
+};
+
+export const generateDailyChallenge = async (userLevel: number, careerFocus: string = "General Computer Science"): Promise<Challenge> => {
+  const modelId = "gemini-2.5-flash";
+  const prompt = `
+  Generate a "Daily Challenge" for a student at Level ${userLevel} learning ${careerFocus}.
+  
+  It can be EITHER:
+  1. A Multiple Choice Quiz Question (Type: 'quiz')
+  2. A "Find the Bug" Code Snippet (Type: 'bug-fix')
+  
+  If 'quiz':
+  - Provide a tricky but fair technical question.
+  - Provide 4 options.
+  - 'correctAnswer' must be one of the options.
+  
+  If 'bug-fix':
+  - Provide a small snippet of code (Python, JS, or C++) in 'codeSnippet' that has a logic or syntax error.
+  - 'question' should be "Find the bug in this code."
+  - 'correctAnswer' should explain what is wrong and how to fix it.
+  
+  Target Difficulty: Based on Level ${userLevel}.
+  Ensure the content is high quality and educational.
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: dailyChallengeSchema,
+      }
+    });
+
+    const text = response.text;
+    if (!text) throw new Error("No daily challenge generated");
+
+    const data = JSON.parse(text) as Challenge;
+    data.id = `daily-${Date.now()}`;
+    return data;
+  } catch (error) {
+    console.error("Daily Challenge Error", error);
     throw error;
   }
 };

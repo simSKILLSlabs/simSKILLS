@@ -14,6 +14,18 @@ export interface Resource {
   description: string;
 }
 
+export interface Challenge {
+  id: string;
+  type: 'quiz' | 'bug-fix';
+  question: string;         // For quiz: the question. For bug-fix: the description of the bug.
+  options?: string[];       // For quiz: choices.
+  codeSnippet?: string;     // For bug-fix: the buggy code.
+  correctAnswer: string;    // For quiz: the option string. For bug-fix: the corrected line or concept.
+  explanation: string;      // Why it is correct
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  xpAward: number;
+}
+
 export interface ProjectTask {
   id: string;
   title: string;
@@ -82,10 +94,13 @@ export interface UserProfile {
   isPro: boolean;
   xp: number;
   streak: number;
+  lastActivityDate?: string; // YYYY-MM-DD
   level: number;
   completedProjects: string[]; // Project IDs
   projectHistory: ProjectHistoryItem[]; // Past grades
   joinedDate?: string;
+  dailyChallengesCompleted?: number;
+  lastChallengeDate?: string; // YYYY-MM-DD
 }
 
 export interface Assessment {

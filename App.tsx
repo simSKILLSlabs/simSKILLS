@@ -86,18 +86,74 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // 3. Persistence (Save on Change)
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'error' | null>(null);
+
+  // 3. Persistence & Logic (Streak, Dates, etc)
   useEffect(() => {
-    if (user.isLoggedIn && user.email) {
-      saveUser(user);
-    }
+    const syncUser = async () => {
+      if (user.isLoggedIn && user.email) {
+        setSaveStatus('saving');
+        try {
+          await saveUser(user);
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus(null), 2000);
+        } catch (e) {
+          console.error("Save failed", e);
+          setSaveStatus('error');
+        }
+      }
+    };
+    syncUser();
   }, [user]);
 
   useEffect(() => {
-    if (user.isLoggedIn && user.email) {
-      saveRoadmaps(user.email, roadmaps);
-    }
+    const syncRoadmaps = async () => {
+      if (user.isLoggedIn && user.email) {
+        setSaveStatus('saving');
+        try {
+          await saveRoadmaps(user.email, roadmaps);
+          setSaveStatus('saved');
+          setTimeout(() => setSaveStatus(null), 2000);
+        } catch (e) {
+          setSaveStatus('error');
+        }
+      }
+    };
+    syncRoadmaps();
   }, [roadmaps]);
+
+  // Daily Reset & Streak Logic Helper
+  const checkDailyLogic = (currentUser: UserProfile) => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastActive = currentUser.lastActivityDate;
+
+    let newStreak = currentUser.streak;
+    let newChallengesToday = currentUser.dailyChallengesCompleted || 0;
+
+    // Reset daily challenges if new day
+    if (currentUser.lastChallengeDate !== today) {
+      newChallengesToday = 0;
+    }
+
+    // Streak Logic
+    if (lastActive !== today) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (lastActive === yesterdayStr) {
+        // Continued streak (only processed on valid action, but we can't auto-increment here without action)
+        // Actually, we increment streak ONLY when they do an action (addXP).
+        // Here we just check if they broke it.
+      } else if (lastActive && lastActive < yesterdayStr) {
+        // Broken streak
+        newStreak = 1;
+      }
+    }
+
+    return { newStreak, newChallengesToday };
+  }
+
 
 
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
@@ -297,6 +353,72 @@ function App() {
     }
   };
 
+
+  const handleQuickStart = async (career: string) => {
+    // Check Limits
+    if (!user.isPro && roadmaps.length >= 2) {
+      setPricingMessage("You have reached the limit of 2 active simulations. Upgrade to Pro for unlimited access.");
+      setShowPricing(true);
+      return;
+    }
+
+    // Default assessment for quick start
+    const defaultAssessment: Assessment = {
+      experience: 'Beginner',
+      goal: 'Career',
+      commitment: 'Casual'
+    };
+    await handleAssessmentComplete(defaultAssessment, career);
+  };
+
+  const handleAddXP = (amount: number, isChallenge: boolean = false) => {
+    setUser(prev => {
+      const today = new Date().toISOString().split('T')[0];
+      const lastActive = prev.lastActivityDate;
+
+      let newStreak = prev.streak;
+
+      if (lastActive !== today) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+        if (lastActive === yesterdayStr) {
+          newStreak += 1; // Increment if active yesterday
+        } else {
+          newStreak = 1; // Reset if gap > 1 day or first time
+        }
+      }
+
+      let challengesCompleted = prev.dailyChallengesCompleted || 0;
+      let lastChallengeDate = prev.lastChallengeDate;
+
+      if (isChallenge) {
+        if (lastChallengeDate !== today) {
+          challengesCompleted = 1;
+          lastChallengeDate = today;
+        } else {
+          challengesCompleted += 1;
+        }
+      } else {
+        // Check if we need to reset count for a new day even if not doing a challenge right now
+        if (lastChallengeDate !== today) {
+          challengesCompleted = 0;
+        }
+      }
+
+      return {
+        ...prev,
+        xp: prev.xp + amount,
+        level: Math.floor((prev.xp + amount) / 1000) + 1,
+        streak: newStreak,
+        lastActivityDate: today,
+        dailyChallengesCompleted: challengesCompleted,
+        lastChallengeDate: lastChallengeDate
+      };
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-white selection:bg-emerald-500 selection:text-black grid-bg font-sans">
       {/* Background Ambience */}
@@ -335,6 +457,8 @@ function App() {
                 setShowAssessment(true);
               }
             }}
+            onQuickStart={handleQuickStart}
+            onAddXP={(amount, isChallenge) => handleAddXP(amount, isChallenge)}
             onUpgrade={(msg) => {
               if (typeof msg === 'string') setPricingMessage(msg);
               setShowPricing(true);
@@ -402,6 +526,13 @@ function App() {
             onComplete={handleProjectComplete}
           />
         )}
+
+        {/* Save Status Indicator */}
+        <div className="fixed bottom-4 right-4 z-50">
+          {saveStatus === 'saving' && <span className="text-xs text-yellow-500 font-mono bg-black/50 px-2 py-1 rounded">Saving...</span>}
+          {saveStatus === 'saved' && <span className="text-xs text-emerald-500 font-mono bg-black/50 px-2 py-1 rounded">Saved</span>}
+          {saveStatus === 'error' && <span className="text-xs text-red-500 font-mono bg-black/80 px-2 py-1 rounded border border-red-500">Save Failed! Check Console/Network</span>}
+        </div>
       </div>
     </div>
   );
