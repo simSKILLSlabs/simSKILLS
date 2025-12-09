@@ -1,20 +1,49 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" alt="SimSkills Logo" width="100%" />
 </div>
 
-# Run and deploy your AI Studio app
+<div align="center">
 
-This contains everything you need to run your app locally.
+# SimSkills 🚀
+**Escape Tutorial Hell. Build Real Software.**
 
-View your app in AI Studio: https://ai.studio/apps/drive/1Yr59HlnSwqddguzDukuURaGS1PLjSVb9
+SimSkills is an advanced AI-powered career simulation platform designed for developers who want mastery, not hand-holding. It generates personalized career roadmaps, acts as a brutal Senior Engineer during code reviews, and provides a full cloud-based IDE for hands-on practice.
 
-## Run Locally
+</div>
 
-**Prerequisites:**  Node.js
+---
 
+## 🔥 Key Features
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 🧠 AI-Architected Roadmaps
+Stop guessing what to learn. Whether you want to be a **Frontend Wizard**, **Cybersecurity Analyst**, or **AI Engineer**, SimSkills instantly generates a comprehensive, level-by-level curriculum tailored to your experience.
+
+### 💻 Cloud IDE Integration
+Code directly in the browser with a VS Code-like environment (Monaco Editor).
+- **Multi-file support**: Build complex projects.
+- **Auto-save**: Never lose your progress.
+- **Instant Execution**: Run JS/Web code instantly.
+
+### 💀 "Brutal" AI Grading
+Our AI doesn't pat you on the back. It acts as a strict **Senior Principal Engineer**.
+- **Security Audits**: Detects vulnerabilities.
+- **Code Hygiene**: Critiques naming conventions and structure.
+- **Optimization**: Demands efficiency.
+*Feedback is harsh, but it makes you better.*
+
+### 🐞 Bug Hunter Mode
+Test your debugging skills against the clock.
+- Get a broken code snippet related to your career path.
+- Find the bug, fix it in the IDE, and verify with AI.
+- Earn XP and maintain your daily streak.
+
+### 🏆 Gamified Progression
+- **XP & Levels**: Grind your way from Junior to Architect.
+- **Streaks**: Build consistency with daily challenges.
+- **Profile Customization**: Show off your title and achievements.
+
+---
+
+<div align="center">
+  <sub>Built with ❤️ for students who want to be elite.</sub>
+</div>
