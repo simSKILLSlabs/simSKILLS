@@ -1,6 +1,6 @@
 import { db } from './firebase';
 import { doc, setDoc, getDoc, collection, getDocs, query, where, addDoc } from 'firebase/firestore';
-import { UserProfile, CareerRoadmap } from '../types';
+import { UserProfile, CareerRoadmap, ProjectDraft, ProjectFile } from '../types';
 
 // Helper to remove undefined values (Firestore doesn't like them)
 const sanitizeData = (data: any): any => {
@@ -69,5 +69,26 @@ export const saveFeedback = async (feedback: any) => {
     } catch (error) {
         console.error("Error saving feedback: ", error);
         throw error;
+    }
+};
+
+export const saveProjectDraft = async (email: string, projectId: string, files: Record<string, ProjectFile>) => {
+    try {
+        await setDoc(doc(db, "users", email, "drafts", projectId), {
+            files,
+            lastModified: Date.now()
+        });
+    } catch (error) {
+        console.error("Error saving draft: ", error);
+    }
+};
+
+export const getProjectDraft = async (email: string, projectId: string): Promise<ProjectDraft | null> => {
+    try {
+        const snap = await getDoc(doc(db, "users", email, "drafts", projectId));
+        return snap.exists() ? snap.data() as ProjectDraft : null;
+    } catch (error) {
+        console.error("Error getting draft: ", error);
+        return null; // Return null instead of empty string for better checking
     }
 };

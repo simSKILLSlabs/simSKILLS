@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { UserProfile, CareerRoadmap, Challenge } from '../types';
-import { Plus, Zap, Trophy, Flame, PlayCircle, Terminal, Layout, Sparkles, Brain, ChevronDown } from 'lucide-react';
+import { Plus, Zap, Trophy, Flame, PlayCircle, Terminal, Layout, Sparkles, Brain, ChevronDown, Bug, ArrowRight } from 'lucide-react';
 import PopularPaths from './PopularPaths';
 import DailyChallengeModal from './DailyChallengeModal';
 import { generateDailyChallenge } from '../services/geminiService';
+import { toast } from 'sonner';
 
 interface DashboardProps {
     user: UserProfile;
@@ -15,15 +16,29 @@ interface DashboardProps {
     onAddXP: (amount: number) => void;
     onUpgrade: (message?: string) => void;
     onProfile: () => void;
+    onBugHunt: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPath, onQuickStart, onAddXP, onUpgrade, onProfile }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPath, onQuickStart, onAddXP, onUpgrade, onProfile, onBugHunt }) => {
 
 
     const [isGeneratingChallenge, setIsGeneratingChallenge] = useState(false);
     const [challenge, setChallenge] = useState<Challenge | null>(null);
     const [showChallengeModal, setShowChallengeModal] = useState(false);
-    const [showPopularPaths, setShowPopularPaths] = useState(true);
+
+    // Initialize from localStorage to check if user permanently hid it
+    const [showPopularPathsSection, setShowPopularPathsSection] = useState(() => {
+        return localStorage.getItem('hidePopularPaths') !== 'true';
+    });
+    const [showPopularPaths, setShowPopularPaths] = useState(true); // Toggle for accordion
+
+    const handleHidePopularPaths = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (confirm("Remove Popular Paths? You can bring this back from settings later.")) {
+            setShowPopularPathsSection(false);
+            localStorage.setItem('hidePopularPaths', 'true');
+        }
+    };
 
     const handleStartChallenge = async () => {
         // Enforce Limits
@@ -41,7 +56,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPa
             setShowChallengeModal(true);
         } catch (e) {
             console.error(e);
-            alert("Could not generate daily challenge. Try again.");
+            toast.error("Could not generate daily challenge. Try again.");
         } finally {
             setIsGeneratingChallenge(false);
         }
@@ -110,7 +125,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPa
 
                 {/* LEFT SIDEBAR AREA - ONLY CHALLENGES */}
                 <div className="lg:col-span-3 space-y-6">
-                    {/* Profile Card Hidden on Desktop since we have Top Bar? No, User wanted "Challenge on Left". 
+                    {/* Profile Card Hidden on Desktop since we have Top Bar? No, User wanted "Challenge on Left".
                         I will hide the redundant Profile Card info or just keep the simplified challenge button + maybe a "Quick Actions" or keep it clean.
                         The user asked to "separate" streak.
                     */}
@@ -156,6 +171,23 @@ const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPa
                         )}
                     </button>
 
+                    {/* Bug Hunter Mode Card */}
+                    <button
+                        onClick={onBugHunt}
+                        className="w-full text-left relative overflow-hidden group transition-all duration-300 rounded-2xl border border-gray-800 bg-gray-900/40 hover:bg-red-900/10 hover:border-red-500/50 p-6 flex items-center gap-4"
+                    >
+                        <div className="p-3 bg-red-500/10 rounded-xl text-red-500 group-hover:scale-110 transition-transform">
+                            <Bug size={24} />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white group-hover:text-red-400 transition-colors">Bug Hunter Mode</h3>
+                            <p className="text-xs text-gray-500">Find & fix bugs for XP</p>
+                        </div>
+                        <div className="ml-auto text-gray-600 group-hover:text-red-500 transition-colors">
+                            <ArrowRight size={18} />
+                        </div>
+                    </button>
+
                     {/* Add simple stats here maybe? */}
                     <div className="bg-[#0a0a0a] border border-gray-800 rounded-2xl p-6">
                         <div className="flex items-center gap-3 mb-2 text-gray-500 text-xs font-bold uppercase tracking-wider">
@@ -170,27 +202,38 @@ const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPa
                 {/* MAIN CONTENT AREA */}
                 <div className="lg:col-span-9 space-y-10">
 
-                    {/* Popular Paths - Collapsible */}
-                    <div className="transition-all duration-300">
-                        <div
-                            className="flex items-center justify-between mb-4 cursor-pointer group select-none"
-                            onClick={() => setShowPopularPaths(!showPopularPaths)}
-                        >
-                            <div className="flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-emerald-500" />
-                                <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
-                                    Popular Career Paths
-                                </h3>
+                    {/* Popular Paths - Collapsible & Removable */}
+                    {showPopularPathsSection && (
+                        <div className="transition-all duration-300">
+                            <div
+                                className="flex items-center justify-between mb-4 cursor-pointer group select-none"
+                                onClick={() => setShowPopularPaths(!showPopularPaths)}
+                            >
+                                <div className="flex items-center gap-2">
+                                    <Sparkles className="w-4 h-4 text-emerald-500" />
+                                    <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
+                                        Popular Career Paths
+                                    </h3>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={handleHidePopularPaths}
+                                        className="text-xs text-gray-600 hover:text-red-500 hover:underline px-2"
+                                        title="Permanently Remove"
+                                    >
+                                        Remove
+                                    </button>
+                                    <div className={`p-1 rounded-full bg-gray-900 text-gray-400 transition-transform duration-300 ${showPopularPaths ? 'rotate-180' : ''}`}>
+                                        <ChevronDown className="w-4 h-4" />
+                                    </div>
+                                </div>
                             </div>
-                            <div className={`p-1 rounded-full bg-gray-900 text-gray-400 transition-transform duration-300 ${showPopularPaths ? 'rotate-180' : ''}`}>
-                                <ChevronDown className="w-4 h-4" />
-                            </div>
-                        </div>
 
-                        <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showPopularPaths ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                            <PopularPaths onSelect={(career) => onQuickStart(career)} />
+                            <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showPopularPaths ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                <PopularPaths onSelect={(career) => onQuickStart(career)} />
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Stats Row (Condensed) */}
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -286,7 +329,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, roadmaps, onResume, onNewPa
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

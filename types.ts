@@ -26,6 +26,15 @@ export interface Challenge {
   xpAward: number;
 }
 
+export interface BugHuntChallenge {
+  id: string;
+  description: string;
+  buggyCode: string;
+  language: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  xpAward: number;
+}
+
 export interface ProjectTask {
   id: string;
   title: string;
@@ -101,10 +110,22 @@ export interface UserProfile {
   joinedDate?: string;
   dailyChallengesCompleted?: number;
   lastChallengeDate?: string; // YYYY-MM-DD
+  bugHuntsCompletedToday?: number;
+  lastBugHuntDate?: string; // YYYY-MM-DD
 }
 
 export interface Assessment {
   experience: 'Beginner' | 'Intermediate' | 'Advanced';
   goal: 'Career' | 'Hobby' | 'Skill-Up';
   commitment: 'Casual' | 'Intense';
+}
+
+export interface ProjectFile {
+  content: string;
+  language: string;
+}
+
+export interface ProjectDraft {
+  files: Record<string, ProjectFile>; // filename -> content
+  lastModified: number;
 }

@@ -32,30 +32,30 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
                 <div className="max-w-5xl mx-auto space-y-12 animate-fade-in-up relative z-10">
 
                     <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-4">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-emerald-500 font-mono tracking-widest text-xs uppercase">System Online v2.5</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 backdrop-blur-md mb-4">
+                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                            <span className="text-red-400 font-mono tracking-widest text-xs uppercase">Warning: No Hand-Holding</span>
                         </div>
 
                         <h1 className="text-6xl md:text-8xl font-bold leading-tight tracking-tighter text-white">
-                            MASTER THE<br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600">SOURCE CODE</span>
+                            ESCAPE <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-600">TUTORIAL HELL</span>
                         </h1>
                         <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
-                            A tailored, AI-architected career simulation.
-                            From "Hello World" to Senior Engineer.
-                            Practice with real-world projects, get instant AI grading, and track your evolution.
+                            Stop copying code you don't understand.
+                            <span className="text-white font-medium"> SimSkills</span> throws you into the deep end with AI-architected projects,
+                            brutal code reviews, and a simulated career path.
                         </p>
 
                         <div className="pt-8 flex flex-col items-center gap-4">
                             <button
                                 onClick={onStart}
-                                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-lg font-bold rounded-full hover:bg-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(52,211,153,0.6)]"
+                                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-lg font-bold rounded-full hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(239,68,68,0.6)]"
                             >
-                                Start Your Career
+                                Start Building Real Sh*t
                                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                             </button>
-                            <p className="text-xs text-gray-600 uppercase tracking-widest">Free for beginners • Pro for masters</p>
+                            <p className="text-xs text-gray-600 uppercase tracking-widest">Free for implementation • Pro for mastery</p>
                         </div>
                     </div>
 
@@ -65,7 +65,7 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
                                 key={career.id}
                                 className="group flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-white/5 transition-colors cursor-default"
                             >
-                                <career.icon className="w-6 h-6 text-gray-500 group-hover:text-emerald-400 transition-colors" />
+                                <career.icon className="w-6 h-6 text-gray-500 group-hover:text-red-400 transition-colors" />
                                 <span className="text-xs text-gray-500 group-hover:text-gray-300 font-medium">{career.title}</span>
                             </div>
                         ))}
@@ -81,22 +81,22 @@ const Hero: React.FC<HeroProps> = ({ onStart }) => {
             <section className="py-32 px-6 relative bg-[#080808]">
                 <div className="max-w-7xl mx-auto">
                     <div className="mb-16">
-                        <h2 className="text-emerald-500 font-mono text-sm uppercase tracking-widest mb-2">System Architecture</h2>
+                        <h2 className="text-red-500 font-mono text-sm uppercase tracking-widest mb-2">The Engine</h2>
                         <h3 className="text-4xl md:text-5xl font-bold text-white max-w-2xl leading-tight">
-                            An adaptive learning engine built on <span className="text-gray-500">Gemini 2.5 Flash</span>.
+                            Built for engineers who demand <span className="text-gray-500">mastery, not hand-holding</span>.
                         </h3>
                     </div>
 
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {[
-                            { icon: Brain, title: "Neural Roadmaps", desc: "Custom curriculum generation based on your current skill level and career goals." },
-                            { icon: Terminal, title: "Real-time Feedback", desc: "Instant code analysis and grading with detailed feedback on logic and syntax." },
-                            { icon: Target, title: "Project Based", desc: "Learn by doing. Generate unlimited practice assignments tailored to your gaps." },
-                            { icon: BarChart3, title: "Skill Vectoring", desc: "Visualize your growth across 5 key engineering dimensions with dynamic radar charts." }
+                            { icon: Brain, title: "Adaptive Curriculum", desc: "No generic roadmaps. Your path evolves based on what you struggle with and what you crush." },
+                            { icon: Terminal, title: "Brutal Feedback", desc: "Our AI doesn't just pass you. It critiques your logic, security, and efficiency like a Senior Dev." },
+                            { icon: Target, title: "Infinite Projects", desc: "Never run out of ideas. Generate unique, career-relevant specs on demand. Build until it clicks." },
+                            { icon: BarChart3, title: "Skill Vectoring", desc: "Track your actual growth across Engineering, Architecture, and Debugging. Data don't lie." }
                         ].map((feature, i) => (
-                            <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-emerald-500/30 transition-all duration-500">
-                                <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center mb-6 group-hover:bg-emerald-500/20 transition-colors">
-                                    <feature.icon className="w-6 h-6 text-gray-400 group-hover:text-emerald-500 transition-colors" />
+                            <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-red-500/30 transition-all duration-500">
+                                <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center mb-6 group-hover:bg-red-500/20 transition-colors">
+                                    <feature.icon className="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors" />
                                 </div>
                                 <h4 className="text-xl font-bold text-white mb-3">{feature.title}</h4>
                                 <p className="text-gray-500 text-sm leading-relaxed">{feature.desc}</p>

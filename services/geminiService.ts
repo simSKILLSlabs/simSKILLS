@@ -1,7 +1,7 @@
 
 // ... (Existing Imports)
 import { GoogleGenAI, Type, Schema } from "@google/genai";
-import { CareerRoadmap, GradingResult, Level, ProjectTask, Assessment, Challenge } from "../types";
+import { CareerRoadmap, GradingResult, Level, ProjectTask, Assessment, Challenge, BugHuntChallenge } from "../types";
 
 // Initialize Gemini Client
 const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
@@ -221,8 +221,8 @@ export const generateLevelDetails = async (levelTitle: string, careerTitle: stri
   
   Provide:
   1. **Teaching Module**: 
-     - 'conceptExplanation': Clear, in-depth explanation of the concepts.
-     - 'practicalGuide': A "How-To" guide on implementing this concept in code.
+     - 'conceptExplanation': Clear, in-depth explanation of the concepts. **Write this for a smart 15-year-old.** Use simple analogies, avoid unnecessary jargon, and keep it engaging.
+     - 'practicalGuide': A "How-To" guide on implementing this concept in code. Use bullet points or numbered steps. **Focus on the "Apply It" aspect.**
      - 'keyTakeaway': One sentence summary.
   2. **Resources**: 
      - 2 High-Quality Video Links (YouTube). MUST be real, popular tutorials from channels like Traversy Media, Fireship, Net Ninja, FreeCodeCamp, etc.
@@ -293,17 +293,25 @@ export const gradeProject = async (
 ): Promise<GradingResult> => {
   const modelId = "gemini-2.5-flash";
   const prompt = `
-  You are grading a student project for the level: ${level}.
+  You are a strict, no-nonsense Senior Principal Engineer grading a junior's code.
+  Level: ${level}
   
   Project Title: ${project.title}
-  Project Requirements: ${project.requirements.join(", ")}
+  Requirements: ${project.requirements.join(", ")}
   
-  Student Submission Context:
+  Submission:
   ${userSubmission}
   
-  Analyze the submission based on the requirements.
-  Calculate a score (0-100).
-  Award XP (Experience Points) based on quality (Range 50-500).
+  Instructions:
+  - Be BRUTAL but constructive. Do not sugarcoat.
+  - If the code is inefficient, insecure, or messy, TEAR IT APART.
+  - Assume the user wants to be an elite engineer, not a script kiddie.
+  - Point out specific logic flaws, bad naming, and security risks.
+  
+  Outputs:
+  - Score (0-100): Be stingy. High scores are only for perfection.
+  - XP: 50-500 based on quality.
+  - Feedback: Direct, technical, and critical.
   `;
 
   try {
@@ -440,5 +448,104 @@ export const generateDailyChallenge = async (userLevel: number, careerFocus: str
   } catch (error) {
     console.error("Daily Challenge Error", error);
     throw error;
+  }
+};
+
+const bugHuntSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    id: { type: Type.STRING },
+    description: { type: Type.STRING },
+    buggyCode: { type: Type.STRING },
+    language: { type: Type.STRING },
+    difficulty: { type: Type.STRING, enum: ["Easy", "Medium", "Hard"] },
+    xpAward: { type: Type.INTEGER }
+  },
+  required: ["id", "description", "buggyCode", "language", "difficulty", "xpAward"]
+};
+
+export const generateBugHunt = async (careerPath: string, difficulty: string): Promise<BugHuntChallenge> => {
+  const modelId = "gemini-2.5-flash";
+  const prompt = `
+  Generate a "Bug Hunter" challenge for a developer learning "${careerPath}".
+  Difficulty: ${difficulty}.
+  
+  Requirements:
+  1. Provide a code snippet (Python, JS, C++, or Java) typical for this career path.
+  2. The code MUST have a specific, logical, or syntax bug.
+  3. The bug should be subtle but findable.
+  4. 'description' should describe the INTENDED behavior.
+  
+  Outputs:
+  - buggyCode: The code with the error.
+  - language: The programming language.
+  - xpAward: appropriate for difficulty (100-500).
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: bugHuntSchema,
+      }
+    });
+
+    const text = response.text;
+    if (!text) throw new Error("No bug hunt generated");
+
+    const data = JSON.parse(text) as BugHuntChallenge;
+    data.id = `bug-${Date.now()}`;
+    return data;
+  } catch (error) {
+    console.error("Bug Hunt Gen Error", error);
+    throw error;
+  }
+};
+
+const validationSchema: Schema = {
+  type: Type.OBJECT,
+  properties: {
+    isCorrect: { type: Type.BOOLEAN },
+    feedback: { type: Type.STRING }
+  },
+  required: ["isCorrect", "feedback"]
+};
+
+export const validateBugFix = async (originalBuggyCode: string, userSolution: string, taskDescription: string): Promise<{ isCorrect: boolean, feedback: string }> => {
+  const modelId = "gemini-2.5-flash";
+  const prompt = `
+  Verify this Bug Fix.
+  
+  Task: ${taskDescription}
+  
+  Original Buggy Code:
+  ${originalBuggyCode}
+  
+  User Solution:
+  ${userSolution}
+  
+  Did the user fix the bug correctly and achieve the intended behavior?
+  Return JSON: { isCorrect: boolean, feedback: string }
+  `;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: modelId,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: validationSchema,
+      }
+    });
+
+    const text = response.text;
+    if (!text) return { isCorrect: false, feedback: "AI verification failed." };
+
+    return JSON.parse(text);
+  } catch (error) {
+    console.error("Bug Fix Validation Error", error);
+    return { isCorrect: false, feedback: "Error validating solution." };
   }
 };

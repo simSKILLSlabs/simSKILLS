@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Send, MessageSquare, Loader2 } from 'lucide-react';
 import { saveFeedback } from '../services/db';
+import { toast } from 'sonner';
 
 interface FeedbackModalProps {
     isOpen: boolean;
@@ -38,7 +39,7 @@ const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, userId, 
             }, 2000);
         } catch (error) {
             console.error("Failed to send feedback:", error);
-            alert("Failed to send feedback. Please try again.");
+            toast.error("Failed to send feedback. Please try again.");
         } finally {
             setIsSending(false);
         }

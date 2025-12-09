@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { X, CheckCircle, XCircle, Code, Brain } from 'lucide-react';
 import { Challenge } from '../types';
+import CodeEditor from './ide/CodeEditor';
 
 interface DailyChallengeModalProps {
     challenge: Challenge;
@@ -17,17 +17,11 @@ const DailyChallengeModal: React.FC<DailyChallengeModalProps> = ({ challenge, on
     const handleSubmit = () => {
         if (!selectedOption && challenge.type === 'quiz') return;
 
-        // For bug fix, we assume "Show Answer" is the interaction for now, 
-        // or if we had a text input we would check it. 
-        // To keep it simple and 2-min length, we'll treat Bug Fix as a self-graded reveal or simple choice if existing.
-
         let correct = false;
         if (challenge.type === 'quiz') {
             correct = selectedOption === challenge.correctAnswer;
         } else {
-            // Bug Fix logic: For now, just revealing the answer counts as "completing" a lesson, 
-            // but strictly speaking, let's make it so they have to click "I fixed it" or "Reveal Solution".
-            // Actually, let's just use the Reveal pattern for Bug Fix to ensure they read it.
+            // Bug Fix logic: Always correct for MVP upon submission
             correct = true;
         }
 
@@ -71,8 +65,13 @@ const DailyChallengeModal: React.FC<DailyChallengeModalProps> = ({ challenge, on
                     </h3>
 
                     {challenge.codeSnippet && (
-                        <div className="bg-[#0a0a0a] p-4 rounded-xl border border-white/5 font-mono text-sm text-gray-300 overflow-x-auto mb-6 shadow-inner">
-                            <pre>{challenge.codeSnippet}</pre>
+                        <div className="mb-6 rounded-xl overflow-hidden border border-white/10 shadow-inner">
+                            <CodeEditor
+                                value={challenge.codeSnippet}
+                                readOnly={isSubmitted}
+                                height="300px"
+                                language="javascript"
+                            />
                         </div>
                     )}
 
@@ -106,13 +105,12 @@ const DailyChallengeModal: React.FC<DailyChallengeModalProps> = ({ challenge, on
                         // Bug Fix Reveal View
                         <div className="mt-4">
                             {!isSubmitted ? (
-                                <div className="p-6 border border-dashed border-white/20 rounded-xl text-center bg-white/5">
-                                    <p className="text-gray-400 mb-4">Analyze the code above. When you think you've found the bug...</p>
+                                <div className="flex justify-end gap-3">
                                     <button
                                         onClick={handleSubmit}
-                                        className="px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-gray-200 transition-colors"
+                                        className="px-6 py-2 bg-emerald-500 text-black font-semibold rounded-lg hover:bg-emerald-400 transition-colors flex items-center gap-2"
                                     >
-                                        Reveal Solution
+                                        <Code size={18} /> Submit Fix
                                     </button>
                                 </div>
                             ) : (
@@ -120,7 +118,10 @@ const DailyChallengeModal: React.FC<DailyChallengeModalProps> = ({ challenge, on
                                     <h4 className="text-emerald-400 font-semibold mb-2 flex items-center gap-2">
                                         <CheckCircle size={18} /> Solution
                                     </h4>
-                                    <p className="text-gray-200 leading-relaxed">{challenge.correctAnswer}</p>
+                                    <div className="p-3 bg-black/50 rounded-lg font-mono text-sm text-gray-300 mb-3">
+                                        {challenge.correctAnswer}
+                                    </div>
+                                    <p className="text-gray-400 text-sm italic">Compare your code with the solution above.</p>
                                 </div>
                             )}
                         </div>
