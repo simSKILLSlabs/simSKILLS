@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" alt="SimSkills Logo" width="100%" />
+  <img src="./assets/simSKILLS.png" alt="SimSkills Logo" width="100%" />
 </div>
 
 <div align="center">
@@ -7,7 +7,7 @@
 # SimSkills 🚀
 **Escape Tutorial Hell. Build Real Software.**
 
-SimSkills is an advanced AI-powered career simulation platform designed for developers who want mastery, not hand-holding. It generates personalized career roadmaps, acts as a brutal Senior Engineer during code reviews, and provides a full cloud-based IDE for hands-on practice.
+SimSkills is an advanced AI-powered career simulation platform designed for developers/students who want mastery, not hand-holding. It generates personalized career roadmaps, acts as a brutal Senior Engineer during code reviews, and provides a full cloud-based IDE for hands-on practice.
 
 </div>
 
