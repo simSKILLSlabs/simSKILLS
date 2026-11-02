@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Check, X, Zap, Crown, Sparkles } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 interface PricingModalProps {
     onSelect: (isPro: boolean) => void;
@@ -12,167 +11,142 @@ const PricingModal: React.FC<PricingModalProps> = ({ onSelect, onClose, message 
     const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/95 backdrop-blur-md animate-fade-in">
-            <div className="relative w-full max-w-5xl">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+            <div className="surface-card relative w-full max-w-4xl rounded-2xl p-6 md:p-10 my-8">
                 <button
                     onClick={onClose}
-                    className="absolute top-0 right-4 md:right-0 text-gray-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-bold uppercase tracking-wider"
+                    className="btn-secondary absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center text-neutral-300 hover:text-white"
                 >
                     <X className="w-4 h-4" />
-                    Close
                 </button>
 
-                <div className="text-center mb-10">
+                <div className="max-w-xl mb-8">
                     {message && (
-                        <div className="mb-6 inline-block bg-yellow-500/10 border border-yellow-500/20 px-4 py-2 rounded-lg">
-                            <p className="text-yellow-500 font-bold text-sm flex items-center gap-2">
-                                <Zap className="w-4 h-4" />
-                                {message}
-                            </p>
-                        </div>
+                        <p className="text-xs font-mono text-amber-400 mb-2">
+                            {message}
+                        </p>
                     )}
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
-                        Invest in your <span className="text-emerald-500">Source Code</span>.
+                    <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                        Plans &amp; Pricing
                     </h2>
-                    <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                        Unlock the full potential of the AI architect. Build unlimited projects, get deep-dive grading, and fast-track your career.
+                    <p className="text-neutral-300/85 text-xs md:text-sm mt-1">
+                        Start for free on the Hobby plan or upgrade to Pro for unlimited curriculum tracks and extended 15-chapter roadmaps.
                     </p>
                 </div>
 
-                {/* Billing Toggle */}
-                <div className="flex justify-center mb-12">
-                    <div className="bg-[#0a0a0a] border border-gray-800 p-1 rounded-full flex relative">
-                        <button
-                            onClick={() => setBilling('monthly')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 relative z-10 ${billing === 'monthly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                        >
-                            Monthly
-                        </button>
-                        <button
-                            onClick={() => setBilling('yearly')}
-                            className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 relative z-10 flex items-center gap-2 ${billing === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                        >
-                            Yearly
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${billing === 'yearly' ? 'bg-black/10 border-black/20 text-black' : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'}`}>
-                                -20%
-                            </span>
-                        </button>
-
-                        {/* Sliding Background */}
-                        <div
-                            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full transition-all duration-300 ease-out shadow-lg ${billing === 'monthly' ? 'left-1' : 'left-[calc(50%+0px)]'}`}
-                        />
-                    </div>
+                {/* Segmented Billing Toggle */}
+                <div className="inline-flex p-1 surface-recessed rounded-xl mb-8">
+                    <button
+                        onClick={() => setBilling('monthly')}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            billing === 'monthly' ? 'bg-white text-black shadow-sm' : 'text-neutral-400 hover:text-white'
+                        }`}
+                    >
+                        Monthly
+                    </button>
+                    <button
+                        onClick={() => setBilling('yearly')}
+                        className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                            billing === 'yearly' ? 'bg-white text-black shadow-sm' : 'text-neutral-400 hover:text-white'
+                        }`}
+                    >
+                        <span>Yearly (Save 20%)</span>
+                    </button>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-8 px-4 md:px-0">
-                    {/* Free Tier */}
-                    <div className="bg-[#0a0a0a] border border-gray-800 rounded-3xl p-8 flex flex-col hover:border-gray-700 transition-all duration-300 group relative overflow-hidden">
-                        <div className="mb-8 z-10">
-                            <div className="w-12 h-12 bg-gray-900 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gray-800 transition-colors">
-                                <Zap className="w-6 h-6 text-gray-400" />
+                <div className="grid md:grid-cols-2 gap-6">
+                    {/* Hobby Tier */}
+                    <div className="surface-recessed rounded-2xl p-6 flex flex-col justify-between">
+                        <div>
+                            <div className="mb-6">
+                                <h3 className="text-base font-bold text-white">Hobby</h3>
+                                <p className="text-neutral-400 text-xs mt-0.5">For individuals exploring core tracks.</p>
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Starter</h3>
-                            <p className="text-gray-500 text-sm">Essential tools for beginners.</p>
-                        </div>
 
-                        <div className="mb-8 z-10">
-                            <div className="text-5xl font-bold text-white tracking-tight">$0</div>
-                            <div className="text-gray-500 text-sm mt-2 font-medium">Forever free.</div>
-                        </div>
+                            <div className="mb-6 pb-6 border-b border-white/[0.08]">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-bold text-white font-mono tabular-nums">$0</span>
+                                    <span className="text-xs text-neutral-500 font-mono">/ month</span>
+                                </div>
+                            </div>
 
-                        <ul className="space-y-4 mb-8 flex-1 z-10">
-                            <li className="flex gap-3 text-sm text-gray-300">
-                                <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                                    <Check className="w-3 h-3 text-white" />
-                                </div>
-                                Max 2 Active Simulations
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-300">
-                                <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                                    <Check className="w-3 h-3 text-white" />
-                                </div>
-                                Basic Project Grading
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-300">
-                                <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                                    <Check className="w-3 h-3 text-white" />
-                                </div>
-                                Standard Speed
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-500 opacity-50">
-                                <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                                    <X className="w-3 h-3" />
-                                </div>
-                                Infinite Practice Arena
-                            </li>
-                            <li className="flex gap-3 text-sm text-gray-500 opacity-50">
-                                <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center shrink-0">
-                                    <X className="w-3 h-3" />
-                                </div>
-                                Grading History & Trends
-                            </li>
-                        </ul>
+                            <ul className="space-y-3 mb-8 text-xs">
+                                <li className="flex items-center gap-2.5 text-neutral-200">
+                                    <Check className="w-3.5 h-3.5 text-white shrink-0" />
+                                    <span>Up to 2 active learning tracks</span>
+                                </li>
+                                <li className="flex items-center gap-2.5 text-neutral-200">
+                                    <Check className="w-3.5 h-3.5 text-white shrink-0" />
+                                    <span>5 foundational chapters per track</span>
+                                </li>
+                                <li className="flex items-center gap-2.5 text-neutral-200">
+                                    <Check className="w-3.5 h-3.5 text-white shrink-0" />
+                                    <span>Automated code review &amp; grading</span>
+                                </li>
+                                <li className="flex items-center gap-2.5 text-neutral-500">
+                                    <X className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Chapters 6–15 advanced extensions</span>
+                                </li>
+                                <li className="flex items-center gap-2.5 text-neutral-500">
+                                    <X className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Unlimited Practice Arena generator</span>
+                                </li>
+                            </ul>
+                        </div>
 
                         <button
                             onClick={() => onSelect(false)}
-                            className="w-full py-4 rounded-xl border border-gray-800 text-white font-bold hover:bg-white hover:text-black transition-all z-10"
+                            className="btn-secondary w-full py-2.5 rounded-lg text-xs font-semibold"
                         >
-                            Continue Free
+                            Continue with Hobby
                         </button>
                     </div>
 
                     {/* Pro Tier */}
-                    <div className="relative bg-[#050505] border border-emerald-500/30 rounded-3xl p-8 flex flex-col shadow-[0_0_50px_-10px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_-20px_rgba(16,185,129,0.3)] transition-all duration-500 group overflow-hidden">
-                        {/* Background Effects */}
-                        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-emerald-500/10 blur-[100px] rounded-full pointer-events-none" />
-                        <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
-
-                        <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-bold px-3 py-1.5 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
-                            <Sparkles className="w-3 h-3" /> Best Value
-                        </div>
-
-                        <div className="mb-8 z-10">
-                            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-6">
-                                <Crown className="w-6 h-6 text-emerald-400" />
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">Pro Architect</h3>
-                            <p className="text-emerald-400/80 text-sm">For serious career switchers.</p>
-                        </div>
-
-                        <div className="mb-8 z-10">
-                            <div className="flex items-baseline gap-2">
-                                <div className="text-5xl font-bold text-white tracking-tight">
-                                    {billing === 'monthly' ? '$5' : '$4'}
+                    <div className="surface-card border-white/25 rounded-2xl p-6 flex flex-col justify-between relative">
+                        <div>
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-base font-bold text-white">Pro</h3>
+                                    <p className="text-neutral-300/80 text-xs mt-0.5">For dedicated engineers and career switchers.</p>
                                 </div>
-                                <span className="text-gray-400 font-medium">/mo</span>
+                                <span className="text-[11px] font-mono text-indigo-300">
+                                    Recommended
+                                </span>
                             </div>
-                            <div className="text-gray-500 text-sm mt-2 font-medium">
-                                {billing === 'monthly' ? 'Billed monthly.' : <span className="text-emerald-400">Billed $48 yearly. Save 20%.</span>}
-                            </div>
-                        </div>
 
-                        <ul className="space-y-4 mb-8 flex-1 z-10">
-                            {[
-                                'Unlimited Simulations',
-                                'Delete Simulations',
-                                'Grading History & Trends',
-                                'Infinite Practice Project Generator',
-                                'Advanced AI Grading',
-                                'Priority Support'
-                            ].map((item, i) => (
-                                <li key={i} className="flex gap-3 text-sm text-gray-200">
-                                    <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-                                        <Check className="w-3 h-3 text-black" />
-                                    </div>
-                                    {item}
-                                </li>
-                            ))}
-                        </ul>
+                            <div className="mb-6 pb-6 border-b border-white/[0.08]">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-bold text-white font-mono tabular-nums">
+                                        {billing === 'monthly' ? '$5' : '$4'}
+                                    </span>
+                                    <span className="text-xs text-neutral-400 font-mono">/ month</span>
+                                </div>
+                                <p className="text-[11px] text-neutral-400 mt-1">
+                                    {billing === 'monthly' ? 'Billed monthly' : 'Billed $48 annually'}
+                                </p>
+                            </div>
+
+                            <ul className="space-y-3 mb-8 text-xs">
+                                {[
+                                    'Unlimited active learning tracks',
+                                    'Full 15-chapter curriculum extensions',
+                                    'Unlimited Practice Arena assignments',
+                                    'Unlimited Daily Bug Hunter sandboxes',
+                                    'Full submission & code review history',
+                                    'Track management & deletion controls'
+                                ].map((item, i) => (
+                                    <li key={i} className="flex items-center gap-2.5 text-neutral-100">
+                                        <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                                        <span>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
 
                         <button
                             onClick={() => onSelect(true)}
-                            className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-bold hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] hover:scale-[1.02] transition-all z-10"
+                            className="btn-primary w-full py-2.5 rounded-lg text-xs font-semibold"
                         >
                             Upgrade to Pro
                         </button>

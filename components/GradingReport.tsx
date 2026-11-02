@@ -1,112 +1,212 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GradingResult } from '../types';
-import { CheckCircle, AlertTriangle, Lightbulb, Star } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Lightbulb, Award, ShieldCheck } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import { useAuth } from '../contexts/AuthContext';
+import CertificateModal from './CertificateModal';
 
 interface GradingReportProps {
-    result: GradingResult;
-    onClose?: () => void;
-    actionButton?: React.ReactNode;
+  result: GradingResult;
+  projectTitle?: string;
+  careerTitle?: string;
+  onRetry: () => void;
+  onContinue: () => void;
 }
 
-const GradingReport: React.FC<GradingReportProps> = ({ result, onClose, actionButton }) => {
-    const chartData = [
-        { subject: 'Coding', A: result.skillMatrix.coding, fullMark: 100 },
-        { subject: 'Logic', A: result.skillMatrix.logic, fullMark: 100 },
-        { subject: 'Creativity', A: result.skillMatrix.creativity, fullMark: 100 },
-        { subject: 'Practices', A: result.skillMatrix.bestPractices, fullMark: 100 },
-        { subject: 'Complete', A: result.skillMatrix.completeness, fullMark: 100 },
-    ];
+const GradingReport: React.FC<GradingReportProps> = ({
+  result,
+  projectTitle = 'Engineering Assignment',
+  careerTitle = 'Software Engineering',
+  onRetry,
+  onContinue
+}) => {
+  const { user } = useAuth();
+  const [showCertModal, setShowCertModal] = useState(false);
 
-    return (
-        <div className="grid md:grid-cols-2 gap-8 animate-fade-in">
-            {/* Left Column: Report */}
-            <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                    <div className={`text-5xl font-bold ${result.score >= 80 ? 'text-emerald-400' : result.score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                        {result.score}
-                        <span className="text-lg text-gray-500 font-normal ml-1">/100</span>
-                    </div>
-                    <div className="bg-yellow-900/20 px-4 py-2 rounded-lg border border-yellow-700/30 flex items-center gap-2">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-yellow-200 font-bold text-sm">+{result.xpAwarded} XP</span>
-                    </div>
-                </div>
+  const skillMatrix = result.skillMatrix || {
+    coding: 50,
+    logic: 50,
+    creativity: 50,
+    bestPractices: 50,
+    completeness: 50
+  };
+  const strengths = Array.isArray(result.strengths) ? result.strengths : [];
+  const weaknesses = Array.isArray(result.weaknesses) ? result.weaknesses : [];
+  const suggestions = Array.isArray(result.suggestions) ? result.suggestions : [];
 
-                <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
-                    <h4 className="text-white font-semibold mb-2">Verdict</h4>
-                    <p className="text-gray-400 text-sm leading-relaxed">{result.feedbackSummary}</p>
-                </div>
+  const chartData = [
+    { subject: 'Coding', A: skillMatrix.coding, fullMark: 100 },
+    { subject: 'Logic', A: skillMatrix.logic, fullMark: 100 },
+    { subject: 'Creativity', A: skillMatrix.creativity, fullMark: 100 },
+    { subject: 'Best Practices', A: skillMatrix.bestPractices, fullMark: 100 },
+    { subject: 'Completeness', A: skillMatrix.completeness, fullMark: 100 },
+  ];
 
-                <div>
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4 text-emerald-500" /> Strengths
-                    </h4>
-                    <ul className="space-y-2">
-                        {result.strengths.map((s, i) => (
-                            <li key={i} className="text-sm text-gray-400 flex gap-2">
-                                <span className="text-gray-600">•</span> {s}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+  const isPassed = result.score >= 70;
 
-                <div>
-                    <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
-                        <AlertTriangle className="w-4 h-4 text-yellow-500" /> Weaknesses
-                    </h4>
-                    <ul className="space-y-2">
-                        {result.weaknesses.map((w, i) => (
-                            <li key={i} className="text-sm text-gray-400 flex gap-2">
-                                <span className="text-gray-600">•</span> {w}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-
-                {actionButton && (
-                    <div className="mt-4">
-                        {actionButton}
-                    </div>
-                )}
+  return (
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+      {/* Top Score & Summary Card */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 surface-card p-6 rounded-xl">
+        <div className="flex items-center gap-6">
+          <div className="surface-recessed rounded-xl px-5 py-4 text-center min-w-[110px]">
+            <div className={`text-3xl font-bold font-mono tabular-nums ${isPassed ? 'text-emerald-400' : 'text-amber-400'}`}>
+              {result.score}
             </div>
-
-            {/* Right Column: Visualization & Tips */}
-            <div className="space-y-6">
-                <div className="h-64 w-full bg-gray-900/30 rounded-xl border border-gray-800 relative">
-                    <p className="absolute top-4 left-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Skill Matrix</p>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                            <PolarGrid stroke="#374151" />
-                            <PolarAngleAxis dataKey="subject" tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                            <Radar
-                                name="Skill"
-                                dataKey="A"
-                                stroke="#10b981"
-                                strokeWidth={2}
-                                fill="#10b981"
-                                fillOpacity={0.3}
-                            />
-                        </RadarChart>
-                    </ResponsiveContainer>
-                </div>
-
-                <div className="bg-emerald-900/10 border border-emerald-900/30 p-5 rounded-xl">
-                    <h4 className="text-emerald-400 font-semibold mb-3 flex items-center gap-2">
-                        <Lightbulb className="w-4 h-4" /> Recommended Actions
-                    </h4>
-                    <ul className="space-y-3">
-                        {result.suggestions.map((tip, i) => (
-                            <li key={i} className="text-sm text-gray-300 border-l-2 border-emerald-500/30 pl-3">
-                                {tip}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+            <div className="text-[11px] text-slate-500 font-mono uppercase tracking-wider mt-1">
+              Score / 100
             </div>
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+              <span className={`text-xs font-mono uppercase tracking-wider ${isPassed ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {isPassed ? '● Assessment Passed' : '▲ Revision Recommended'}
+              </span>
+              <span className="text-white/15">·</span>
+              <span className="text-xs font-mono text-indigo-400 tabular-nums">
+                +{result.xpAwarded} XP
+              </span>
+              {result.testTotalCount !== undefined && (
+                <>
+                  <span className="text-white/15">·</span>
+                  <span className="text-xs font-mono text-slate-300">
+                    {result.testPassCount ?? result.testTotalCount}/{result.testTotalCount} Unit Tests Passed
+                  </span>
+                </>
+              )}
+              {result.verificationHash && (
+                <>
+                  <span className="text-white/15">·</span>
+                  <span className="text-xs font-mono text-slate-500 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    {result.verificationHash}
+                  </span>
+                </>
+              )}
+            </div>
+            <h2 className="text-lg font-bold text-white mb-1">
+              {isPassed ? 'Requirements Verified' : 'Changes Requested'}
+            </h2>
+            <p className="text-slate-400 text-xs max-w-xl leading-relaxed">
+              {result.feedbackSummary}
+            </p>
+          </div>
         </div>
-    );
+
+        {isPassed && (
+          <button
+            onClick={() => setShowCertModal(true)}
+            className="btn-secondary px-4 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 shrink-0 border-indigo-500/30 text-indigo-300 hover:text-white"
+          >
+            <Award className="w-4 h-4 text-indigo-400" />
+            <span>Verified Credential & Share</span>
+          </button>
+        )}
+      </div>
+
+      {/* Radar Chart & Strengths/Weaknesses Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="surface-card p-6 rounded-xl flex flex-col items-center justify-center min-h-[280px]">
+          <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-3 w-full text-left">
+            Competency Breakdown
+          </h3>
+          <div className="w-full h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="72%" data={chartData}>
+                <PolarGrid stroke="rgba(255,255,255,0.08)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'JetBrains Mono' }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar
+                  name="Skills"
+                  dataKey="A"
+                  stroke="#818cf8"
+                  strokeWidth={2}
+                  fill="#6366f1"
+                  fillOpacity={0.22}
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="surface-card p-5 rounded-xl">
+            <h4 className="text-emerald-400 text-xs font-mono uppercase tracking-wider mb-3 flex items-center gap-2">
+              <CheckCircle className="w-3.5 h-3.5" /> What Worked Well
+            </h4>
+            <ul className="space-y-2">
+              {strengths.map((s, i) => (
+                <li key={i} className="text-slate-300 text-xs flex items-start gap-2 leading-relaxed">
+                  <span className="text-emerald-400 font-mono">+</span>
+                  <span>{s}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="surface-card p-5 rounded-xl">
+            <h4 className="text-amber-400 text-xs font-mono uppercase tracking-wider mb-3 flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5" /> Areas to Improve
+            </h4>
+            <ul className="space-y-2">
+              {weaknesses.map((w, i) => (
+                <li key={i} className="text-slate-300 text-xs flex items-start gap-2 leading-relaxed">
+                  <span className="text-amber-400 font-mono">-</span>
+                  <span>{w}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Actionable Suggestions */}
+      <div className="surface-card p-6 rounded-xl">
+        <h4 className="text-indigo-400 text-xs font-mono uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Lightbulb className="w-3.5 h-3.5" /> Code Review Notes
+        </h4>
+        <div className="space-y-2">
+          {suggestions.map((s, i) => (
+            <p key={i} className="text-slate-300 text-xs leading-relaxed">
+              • {s}
+            </p>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Footer */}
+      <div className="flex justify-end gap-3 pt-2">
+        <button
+          onClick={onRetry}
+          className="btn-secondary px-5 py-2.5 rounded-lg text-xs font-medium"
+        >
+          Revise Code
+        </button>
+        {isPassed && (
+          <button
+            onClick={onContinue}
+            className="btn-primary px-6 py-2.5 rounded-lg font-semibold text-xs"
+          >
+            Complete Assignment
+          </button>
+        )}
+      </div>
+
+      {showCertModal && (
+        <CertificateModal
+          user={user}
+          projectItem={{
+            ...result,
+            projectId: projectTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            projectTitle,
+            timestamp: Date.now()
+          }}
+          careerTitle={careerTitle}
+          onClose={() => setShowCertModal(false)}
+        />
+      )}
+    </div>
+  );
 };
 
 export default GradingReport;

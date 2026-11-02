@@ -56,29 +56,16 @@ const DashboardPage: React.FC = () => {
     const handleAssessmentComplete = async (assessment: Assessment, career: string) => {
         setShowAssessment(false);
         setLoading(true);
-        setLoadingText("ARCHITECTING CAREER SKELETON");
+        setLoadingText("Building Curriculum Track");
         try {
             const data = await generateRoadmap(career, assessment, user.isPro);
-            // We need to save this to DB preferably here or via AuthContext helper if we had one
-            // But for now, we rely on the implementation in App.tsx which did: setRoadmaps(prev => [...prev, data])
-            // And strict useEffect syncing. 
-            // Better approach: Save directly to DB here, then refresh context.
-
-            // To be safe and reuse `saveRoadmaps` logic from App.tsx (which we are deleting),
-            // we should probably just save it here.
-            // Wait, `db.ts` has `saveRoadmaps` but it takes the whole list.
-            // Let's create `addRoadmap` in db.ts or just append and save.
-
-            // For MVP parity:
             const newRoadmaps = [...roadmaps, data];
-            // We need to save this. But `saveRoadmaps` in db.ts writes the whole list.
-            // Let's assume we can import saveRoadmaps.
             const { saveRoadmaps } = await import('../services/db');
             if (user.email) await saveRoadmaps(user.email, newRoadmaps);
 
             await refreshRoadmaps();
             navigate(`/roadmap/${data.id}`);
-            toast.success("Simulation Created");
+            toast.success("Learning track created");
         } catch (error: any) {
             setErrorMessage(error.message || "Failed to generate.");
             setShowAssessment(true);
@@ -113,6 +100,7 @@ const DashboardPage: React.FC = () => {
             xp: newXp,
             level: Math.floor(newXp / 1000) + 1,
             lastActivityDate: today,
+            lastChallengeDate: today,
             streak: newStreak
         });
         toast.success(`+${amount} XP`);

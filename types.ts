@@ -1,5 +1,3 @@
-
-
 export enum Difficulty {
   Beginner = "Beginner",
   Intermediate = "Intermediate",
@@ -9,9 +7,11 @@ export enum Difficulty {
 
 export interface Resource {
   title: string;
-  type: 'video' | 'article' | 'course';
+  type: 'video' | 'article' | 'course' | 'documentation';
   url?: string;
   description: string;
+  source?: string;
+  isVerified?: boolean;
 }
 
 export interface Challenge {
@@ -35,18 +35,86 @@ export interface BugHuntChallenge {
   xpAward: number;
 }
 
+export interface ProjectTestCase {
+  id: string;
+  name: string;
+  inputDescription: string;
+  expectedOutput: string;
+  testCode?: string;
+}
+
+export interface TestCaseRunResult {
+  id: string;
+  name: string;
+  passed: boolean;
+  inputDescription: string;
+  expectedOutput: string;
+  actualOutput: string;
+  error?: string;
+}
+
+export interface TestExecutionResult {
+  passed: boolean;
+  passCount: number;
+  totalCount: number;
+  stdout: string[];
+  stderr: string[];
+  executionTimeMs: number;
+  results: TestCaseRunResult[];
+}
+
 export interface ProjectTask {
   id: string;
   title: string;
   description: string;
   requirements: string[];
   difficulty: string;
+  language?: string;
+  starterCode?: string;
+  walkthrough?: string;
+  hints?: string[];
+  testCases?: ProjectTestCase[];
+}
+
+export interface TeachingSection {
+  title: string;
+  theory: string;
+  syntaxRule?: string;
+  codeLanguage: string;
+  codeExample: string;
+  codeOutput?: string;
+  explanation: string;
+}
+
+export interface TeachingPitfall {
+  mistake: string;
+  whyItHappens: string;
+  fix: string;
+  badCode?: string;
+  goodCode?: string;
+}
+
+export interface ConceptCheckQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+}
+
+export interface KeyTerm {
+  term: string;
+  definition: string;
 }
 
 export interface TeachingModule {
   conceptExplanation: string; // "What it is"
-  practicalGuide: string; // "How to do it"
+  mentalModel?: string;       // Intuition / real-world analogy
+  practicalGuide: string;     // "How to do it step-by-step"
   keyTakeaway: string;
+  keyTerms?: KeyTerm[];
+  sections?: TeachingSection[];
+  pitfalls?: TeachingPitfall[];
+  checkpointQuiz?: ConceptCheckQuestion[];
 }
 
 export interface Level {
@@ -61,6 +129,7 @@ export interface Level {
   projects?: ProjectTask[];
   isLocked?: boolean;
   isCompleted?: boolean;
+  isCached?: boolean;
 }
 
 export interface CareerRoadmap {
@@ -70,6 +139,7 @@ export interface CareerRoadmap {
   description: string;
   levels: Level[];
   extraProjects: ProjectTask[]; // New field for infinite practice
+  isCurated?: boolean;
 }
 
 export interface GradingResult {
@@ -86,6 +156,11 @@ export interface GradingResult {
     bestPractices: number;
     completeness: number;
   };
+  submittedFiles?: Record<string, ProjectFile>;
+  careerTitle?: string;
+  testPassCount?: number;
+  testTotalCount?: number;
+  verificationHash?: string;
 }
 
 export interface ProjectHistoryItem extends GradingResult {
@@ -100,6 +175,7 @@ export interface UserProfile {
   email: string;
   title?: string;
   bio?: string;
+  portfolioId?: string;
   isPro: boolean;
   xp: number;
   streak: number;
@@ -112,6 +188,21 @@ export interface UserProfile {
   lastChallengeDate?: string; // YYYY-MM-DD
   bugHuntsCompletedToday?: number;
   lastBugHuntDate?: string; // YYYY-MM-DD
+}
+
+export interface PublicPortfolioSnapshot {
+  portfolioId: string;
+  name: string;
+  email: string;
+  title: string;
+  bio: string;
+  joinedDate: string;
+  xp: number;
+  level: number;
+  streak: number;
+  isPro: boolean;
+  verifiedProjects: ProjectHistoryItem[];
+  updatedAt: number;
 }
 
 export interface Assessment {

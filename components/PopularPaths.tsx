@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { ArrowRight, Sparkles, Database, Layout, Server, Cpu } from 'lucide-react';
+import { ArrowUpRight, Database, Layout, Server, Cpu } from 'lucide-react';
 
 interface PopularPathsProps {
     onSelect: (career: string) => void;
@@ -8,37 +7,30 @@ interface PopularPathsProps {
 
 const paths = [
     {
-        title: "Frontend Developer",
+        title: "Frontend Engineer",
         icon: Layout,
-        color: "from-pink-500 to-rose-500",
-        desc: "Master React, CSS, and modern UI.",
-        demand: "High"
+        stack: "HTML · CSS · TypeScript · React",
+        desc: "Build responsive interfaces, state management, and modern web applications."
     },
     {
         title: "Backend Engineer",
         icon: Server,
-        color: "from-blue-500 to-cyan-500",
-        desc: "Build APIs, databases, and scalable logic.",
-        demand: "Very High"
+        stack: "Node.js · SQL · REST APIs · Auth",
+        desc: "Design scalable server architectures, relational databases, and APIs."
     },
     {
         title: "Data Scientist",
         icon: Database,
-        color: "from-emerald-500 to-green-500",
-        desc: "Analyze data, build ML models & AI.",
-        demand: "Explosive"
+        stack: "Python · SQL · Pandas · ML",
+        desc: "Analyze datasets, build statistical pipelines, and train machine learning models."
     },
     {
-        title: "AI Engineer",
-        icon: Brain, // Using Sparkles as generic AI if Brain not imported, but let's import Brain
-        color: "from-purple-500 to-violet-500",
-        desc: "Create LLMs, agents, and neural nets.",
-        demand: "Top Tier"
+        title: "AI & Systems Engineer",
+        icon: Cpu,
+        stack: "Python · LLMs · Vector DBs · APIs",
+        desc: "Build production AI applications, retrieval pipelines, and autonomous workflows."
     }
 ];
-
-// Helper to make sure we have the icon
-import { Brain } from 'lucide-react';
 
 const PopularPaths: React.FC<PopularPathsProps> = ({ onSelect }) => {
     return (
@@ -48,27 +40,33 @@ const PopularPaths: React.FC<PopularPathsProps> = ({ onSelect }) => {
                     <button
                         key={idx}
                         onClick={() => onSelect(path.title)}
-                        className="relative group overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 text-left hover:border-white/20 transition-all duration-300 hover:transform hover:-translate-y-1"
+                        className="group surface-interactive rounded-2xl p-5 text-left flex flex-col justify-between"
                     >
-                        {/* Hover Gradient */}
-                        <div className={`absolute inset-0 bg-gradient-to-br ${path.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-
-                        <div className="relative z-10">
-                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${path.color} flex items-center justify-center mb-4 shadow-lg`}>
-                                <path.icon size={20} className="text-white" />
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-9 h-9 rounded-xl surface-recessed flex items-center justify-center text-indigo-300 group-hover:text-white transition-colors">
+                                    <path.icon size={17} />
+                                </div>
+                                <ArrowUpRight
+                                    size={15}
+                                    className="text-neutral-500 group-hover:text-white transition-colors"
+                                />
                             </div>
 
-                            <h4 className="font-semibold text-white text-lg mb-1 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-colors">
+                            <h4 className="font-bold text-white text-sm mb-1 tracking-tight">
                                 {path.title}
                             </h4>
-                            <p className="text-xs text-gray-400 font-medium mb-3">{path.demand} Demand</p>
-                            <p className="text-sm text-gray-400 line-clamp-2 mb-4">
+                            <p className="text-[11px] font-mono text-indigo-300/80 mb-3">
+                                {path.stack}
+                            </p>
+                            <p className="text-xs text-neutral-300/80 leading-relaxed line-clamp-2">
                                 {path.desc}
                             </p>
+                        </div>
 
-                            <div className="flex items-center text-xs text-white/50 font-medium group-hover:text-white transition-colors">
-                                Start Path <ArrowRight size={14} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                            </div>
+                        <div className="mt-5 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs font-medium text-neutral-400 group-hover:text-white transition-colors">
+                            <span>Initialize track</span>
+                            <span className="font-mono text-[11px] tabular-nums">5–15 chapters</span>
                         </div>
                     </button>
                 ))}

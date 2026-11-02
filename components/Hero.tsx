@@ -1,285 +1,317 @@
-
 import React, { useState } from 'react';
-import { Sparkles, Code2, PenTool, Terminal, Layout, Cpu, ArrowRight, ChevronDown, Brain, Target, BarChart3, Check, Zap, Crown } from 'lucide-react';
+import { ArrowRight, Terminal, Code2, CheckCircle2, Play, BookOpen, Layers } from 'lucide-react';
 
 interface HeroProps {
-    onStart: () => void;
+  onStart: () => void;
+  onLogin?: () => void;
 }
 
-const CAREERS = [
-    { id: 'frontend', title: 'Frontend Developer', icon: Layout, desc: 'Master React, UI/UX, and the modern web.' },
-    { id: 'backend', title: 'Backend Engineer', icon: Terminal, desc: 'Server logic, databases, and scalable APIs.' },
-    { id: 'fullstack', title: 'Full Stack Developer', icon: Code2, desc: 'The complete package. Front to back.' },
-    { id: 'uiux', title: 'UI/UX Designer', icon: PenTool, desc: 'Craft beautiful, user-centric digital experiences.' },
-    { id: 'ai-engineer', title: 'AI Engineer', icon: Sparkles, desc: 'Machine Learning, LLMs, and Neural Networks.' },
-    { id: 'embedded', title: 'Embedded Systems', icon: Cpu, desc: 'Programming hardware, IoT, and low-level logic.' },
-];
+const Hero: React.FC<HeroProps> = ({ onStart, onLogin }) => {
+  const handleLoginClick = onLogin || onStart;
+  const [previewTab, setPreviewTab] = useState<'lesson' | 'review'>('lesson');
 
-const Hero: React.FC<HeroProps> = ({ onStart }) => {
-    const [billing, setBilling] = useState<'monthly' | 'yearly'>('monthly');
+  return (
+    <div className="min-h-screen text-[#f0f2f5] flex flex-col justify-between relative">
+      {/* Top Navigation Bar (Strict 3-Zone Contract) */}
+      <header className="sticky top-0 z-30 border-b border-white/[0.08] bg-[#06070a]/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-8">
+          <a href="/" className="font-bold tracking-tight text-white text-base whitespace-nowrap shrink-0">
+            SimSKILLS
+          </a>
 
-    return (
-        <div className="bg-[#050505] text-white selection:bg-emerald-500 selection:text-black overflow-x-hidden">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-neutral-400">
+            <a href="#curriculum" className="hover:text-white transition-colors whitespace-nowrap shrink-0">Curriculum</a>
+            <a href="#workspace" className="hover:text-white transition-colors whitespace-nowrap shrink-0">Workspace</a>
+            <a href="#reviews" className="hover:text-white transition-colors whitespace-nowrap shrink-0">Code Reviews</a>
+            <button onClick={handleLoginClick} className="hover:text-white transition-colors whitespace-nowrap shrink-0">
+              Sign In
+            </button>
+          </nav>
 
-            {/* --- SECTION 1: ORIGINAL HERO --- */}
-            <section className="relative min-h-screen flex flex-col items-center justify-center p-6 text-center z-10 border-b border-gray-900/50">
-                {/* Background Ambience for Hero */}
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-                    <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[128px]" />
-                    <div className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[128px]" />
-                </div>
-
-                <div className="max-w-5xl mx-auto space-y-12 animate-fade-in-up relative z-10">
-
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 backdrop-blur-md mb-4">
-                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                            <span className="text-red-400 font-mono tracking-widest text-xs uppercase">Warning: No Hand-Holding</span>
-                        </div>
-
-                        <h1 className="text-6xl md:text-8xl font-bold leading-tight tracking-tighter text-white">
-                            ESCAPE <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-red-600">TUTORIAL HELL</span>
-                        </h1>
-                        <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
-                            Stop copying code you don't understand.
-                            <span className="text-white font-medium"> SimSkills</span> throws you into the deep end with AI-architected projects,
-                            brutal code reviews, and a simulated career path.
-                        </p>
-
-                        <div className="pt-8 flex flex-col items-center gap-4">
-                            <button
-                                onClick={onStart}
-                                className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-black text-lg font-bold rounded-full hover:bg-red-500 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(239,68,68,0.6)]"
-                            >
-                                Start Building Real Sh*t
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <p className="text-xs text-gray-600 uppercase tracking-widest">Free for implementation • Pro for mastery</p>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 pt-12 opacity-50 hover:opacity-100 transition-opacity duration-500">
-                        {CAREERS.map((career) => (
-                            <div
-                                key={career.id}
-                                className="group flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-white/5 transition-colors cursor-default"
-                            >
-                                <career.icon className="w-6 h-6 text-gray-500 group-hover:text-red-400 transition-colors" />
-                                <span className="text-xs text-gray-500 group-hover:text-gray-300 font-medium">{career.title}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-30">
-                    <ChevronDown className="w-6 h-6 text-white" />
-                </div>
-            </section>
-
-            {/* --- SECTION 2: SYSTEM CAPABILITIES --- */}
-            <section className="py-32 px-6 relative bg-[#080808]">
-                <div className="max-w-7xl mx-auto">
-                    <div className="mb-16">
-                        <h2 className="text-red-500 font-mono text-sm uppercase tracking-widest mb-2">The Engine</h2>
-                        <h3 className="text-4xl md:text-5xl font-bold text-white max-w-2xl leading-tight">
-                            Built for engineers who demand <span className="text-gray-500">mastery, not hand-holding</span>.
-                        </h3>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            { icon: Brain, title: "Adaptive Curriculum", desc: "No generic roadmaps. Your path evolves based on what you struggle with and what you crush." },
-                            { icon: Terminal, title: "Brutal Feedback", desc: "Our AI doesn't just pass you. It critiques your logic, security, and efficiency like a Senior Dev." },
-                            { icon: Target, title: "Infinite Projects", desc: "Never run out of ideas. Generate unique, career-relevant specs on demand. Build until it clicks." },
-                            { icon: BarChart3, title: "Skill Vectoring", desc: "Track your actual growth across Engineering, Architecture, and Debugging. Data don't lie." }
-                        ].map((feature, i) => (
-                            <div key={i} className="group p-8 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-red-500/30 transition-all duration-500">
-                                <div className="w-12 h-12 bg-gray-900 rounded-lg flex items-center justify-center mb-6 group-hover:bg-red-500/20 transition-colors">
-                                    <feature.icon className="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors" />
-                                </div>
-                                <h4 className="text-xl font-bold text-white mb-3">{feature.title}</h4>
-                                <p className="text-gray-500 text-sm leading-relaxed">{feature.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* --- SECTION 3: VISUAL PREVIEW --- */}
-            <section className="py-32 overflow-hidden relative border-y border-white/5 bg-[#050505]">
-                <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none"></div>
-                <div className="max-w-7xl mx-auto px-6 flex flex-col lg:flex-row items-center gap-16">
-                    <div className="lg:w-1/2 space-y-8 z-10">
-                        <h2 className="text-4xl md:text-6xl font-bold text-white leading-none tracking-tighter">
-                            COMPILE YOUR <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">POTENTIAL.</span>
-                        </h2>
-                        <p className="text-gray-400 text-lg leading-relaxed max-w-md">
-                            Stop watching tutorials. Start building. simSkill places you in a simulated work environment where you complete tickets, debug code, and ship features.
-                        </p>
-                        <div className="flex gap-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-300">
-                                <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                                Gemini 2.5 Integration
-                            </div>
-                            <div className="flex items-center gap-2 text-sm text-gray-300">
-                                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                Live XP Tracking
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="lg:w-1/2 relative">
-                        {/* Abstract UI Mockup */}
-                        <div className="relative z-10 bg-[#0a0a0a] border border-gray-800 rounded-xl p-4 shadow-2xl transform rotate-[-5deg] hover:rotate-0 transition-transform duration-700 w-full max-w-lg mx-auto">
-                            <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-4">
-                                <div className="flex gap-1.5">
-                                    <div className="w-3 h-3 rounded-full bg-red-500/20"></div>
-                                    <div className="w-3 h-3 rounded-full bg-yellow-500/20"></div>
-                                    <div className="w-3 h-3 rounded-full bg-green-500/20"></div>
-                                </div>
-                                <div className="text-[10px] text-gray-600 font-mono ml-2">grader_module.tsx</div>
-                            </div>
-                            <div className="space-y-3 font-mono text-xs">
-                                <div className="flex gap-4">
-                                    <span className="text-gray-700">01</span>
-                                    <span className="text-purple-400">const</span> <span className="text-blue-400">analysis</span> = <span className="text-emerald-400">await</span> ai.grade(submission);
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-700">02</span>
-                                    <span className="text-gray-500">// Analyzing logic structure...</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-700">03</span>
-                                    <span className="text-emerald-500">{`> Optimization Found: O(n) complexity achieved.`}</span>
-                                </div>
-                                <div className="flex gap-4">
-                                    <span className="text-gray-700">04</span>
-                                    <span className="text-blue-400">{`> Security: Input validation verified.`}</span>
-                                </div>
-                                <div className="p-4 mt-4 bg-emerald-900/10 border border-emerald-900/30 rounded text-emerald-300">
-                                    <span className="font-bold">+450 XP Awarded.</span> Level Up Imminent.
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Glow Effect behind mockup */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-purple-900/20 blur-[100px] pointer-events-none"></div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- SECTION 4: PRICING --- */}
-            <section className="py-32 px-6 bg-[#080808]">
-                <div className="max-w-6xl mx-auto">
-                    <div className="text-center mb-10">
-                        <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Invest in your Stack.</h2>
-                        <p className="text-gray-400 max-w-xl mx-auto">
-                            Start for free. Upgrade when you're ready to commit to the professional workflow.
-                        </p>
-                    </div>
-
-                    {/* Billing Toggle */}
-                    <div className="flex justify-center mb-12">
-                        <div className="bg-[#0a0a0a] border border-gray-800 p-1 rounded-full flex relative">
-                            <button
-                                onClick={() => setBilling('monthly')}
-                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 relative z-10 ${billing === 'monthly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                Monthly
-                            </button>
-                            <button
-                                onClick={() => setBilling('yearly')}
-                                className={`px-6 py-2 rounded-full text-sm font-bold transition-all duration-300 relative z-10 flex items-center gap-2 ${billing === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                Yearly
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${billing === 'yearly' ? 'bg-black/10 border-black/20 text-black' : 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'}`}>
-                                    -20%
-                                </span>
-                            </button>
-
-                            {/* Sliding Background */}
-                            <div
-                                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full transition-all duration-300 ease-out shadow-lg ${billing === 'monthly' ? 'left-1' : 'left-[calc(50%+0px)]'}`}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                        {/* Free Card */}
-                        <div className="p-8 rounded-3xl bg-black border border-gray-800 flex flex-col relative overflow-hidden group">
-                            <div className="mb-6 z-10">
-                                <h3 className="text-2xl font-bold text-white mb-2">Starter</h3>
-                                <div className="text-4xl font-bold text-gray-500">$0<span className="text-lg font-normal text-gray-600">/mo</span></div>
-                            </div>
-                            <ul className="space-y-4 mb-8 flex-1 z-10">
-                                {['Max 2 Active Simulations', 'Basic Project Grading', 'Standard Speed', 'Access to first 4 levels'].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-sm text-gray-400">
-                                        <div className="w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center">
-                                            <Check className="w-3 h-3 text-gray-500" />
-                                        </div>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
-                            <button
-                                onClick={onStart}
-                                className="w-full py-4 rounded-xl border border-gray-800 text-white font-bold hover:bg-gray-900 transition-colors z-10"
-                            >
-                                Start Learning
-                            </button>
-                        </div>
-
-                        {/* Pro Card */}
-                        <div className="p-8 rounded-3xl bg-gradient-to-b from-gray-900 to-black border border-gray-800 relative overflow-hidden group flex flex-col hover:border-emerald-500/50 transition-colors">
-                            <div className="absolute top-0 right-0 p-4">
-                                <Zap className="w-6 h-6 text-yellow-400 fill-yellow-400 animate-pulse" />
-                            </div>
-                            <div className="mb-6 z-10">
-                                <h3 className="text-2xl font-bold text-white mb-2">Pro Architect</h3>
-                                <div className="flex items-baseline gap-1">
-                                    <div className="text-4xl font-bold text-white">{billing === 'monthly' ? '$5' : '$4'}</div>
-                                    <span className="text-lg font-normal text-gray-500">/mo</span>
-                                </div>
-                                <div className="text-gray-500 text-sm mt-1 font-medium">
-                                    {billing === 'monthly' ? 'Billed monthly.' : <span className="text-emerald-400">Billed $48 yearly. Save 20%.</span>}
-                                </div>
-                            </div>
-                            <ul className="space-y-4 mb-8 flex-1 z-10">
-                                {['Unlimited Simulations', 'Delete Simulations', 'Grading History & Trends', 'Infinite Practice', 'Advanced AI Grading'].map((item, i) => (
-                                    <li key={i} className="flex items-center gap-3 text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                                            <Check className="w-3 h-3 text-emerald-400" />
-                                        </div>
-                                        {item}
-                                    </li>
-                                ))}
-                            </ul>
-                            <button
-                                onClick={onStart}
-                                className="w-full py-4 rounded-xl bg-emerald-500 text-black font-bold hover:bg-emerald-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.3)] z-10"
-                            >
-                                Get Pro Access
-                            </button>
-
-                            {/* Pro Glow */}
-                            <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-emerald-900/20 to-transparent pointer-events-none"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* --- FOOTER --- */}
-            <footer className="py-12 border-t border-gray-900 bg-black text-center">
-                <div className="flex flex-col items-center gap-6">
-                    <span className="text-2xl font-bold text-white tracking-tighter">simSkill</span>
-                    <p className="text-gray-600 text-sm">© 2024 simSkill. Powered by Google Gemini.</p>
-                </div>
-            </footer>
-
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={onStart}
+              className="btn-primary px-4 py-2 text-xs font-semibold rounded-lg whitespace-nowrap shrink-0"
+            >
+              Get Started
+            </button>
+          </div>
         </div>
-    );
+      </header>
+
+      {/* Main Hero Content */}
+      <main className="relative z-10 flex-1 max-w-6xl w-full mx-auto px-6 py-16 md:py-24 space-y-24">
+        {/* 2-Column Balanced Split: Proposition Left + Tactile Interactive Preview Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <div className="text-xs font-mono text-indigo-300/90 tracking-wide">
+              Interactive Software Engineering Curriculum
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.08]">
+              Learn to engineer software by building it.
+            </h1>
+
+            <p className="text-neutral-300/90 text-base md:text-lg leading-relaxed font-normal max-w-xl">
+              Structured, textbook-depth chapters from first principles to production architecture. Read clear explanations with live code outputs, solve guided assignments, and receive instant technical code reviews.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <button
+                onClick={onStart}
+                className="btn-primary h-11 px-6 font-semibold text-sm rounded-lg flex items-center gap-2 whitespace-nowrap shrink-0"
+              >
+                <span>Start Learning Track</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleLoginClick}
+                className="btn-secondary h-11 px-6 font-medium text-sm rounded-lg whitespace-nowrap shrink-0"
+              >
+                Resume Existing Track
+              </button>
+            </div>
+
+            <div className="pt-4 flex items-center gap-6 text-xs text-neutral-400 font-mono">
+              <span>Zero-Jargon Chapter 1</span>
+              <span>·</span>
+              <span>Built-In Cloud IDE</span>
+              <span>·</span>
+              <span>Automated Code Review</span>
+            </div>
+          </div>
+
+          {/* Right Column: Tactile Elevated Workspace Preview Window */}
+          <div className="lg:col-span-6">
+            <div className="surface-card rounded-2xl overflow-hidden">
+              {/* Window Chrome Header */}
+              <div className="px-4 py-3 bg-[#090b10] border-b border-white/[0.08] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-neutral-400">
+                    Chapter 02 · Asynchronous State &amp; APIs
+                  </span>
+                </div>
+
+                {/* Interactive Segmented Control */}
+                <div className="flex items-center gap-1 p-1 rounded-lg bg-[#050609] border border-white/[0.06]">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab('lesson')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 ${
+                      previewTab === 'lesson'
+                        ? 'bg-white text-black shadow-sm'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    Interactive Lesson
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPreviewTab('review')}
+                    className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap shrink-0 ${
+                      previewTab === 'review'
+                        ? 'bg-white text-black shadow-sm'
+                        : 'text-neutral-400 hover:text-white'
+                    }`}
+                  >
+                    Code Review
+                  </button>
+                </div>
+              </div>
+
+              {/* Window Body */}
+              {previewTab === 'lesson' ? (
+                <div className="p-5 md:p-6 space-y-4">
+                  <div className="space-y-1.5">
+                    <h3 className="text-sm font-semibold text-white">
+                      1. Fetching &amp; Parsing JSON Responses
+                    </h3>
+                    <p className="text-xs text-neutral-300/90 leading-relaxed">
+                      When requesting data from an external service, <code className="text-indigo-300 font-mono">await fetch(url)</code> pauses execution inside the async function until the server responds.
+                    </p>
+                  </div>
+
+                  {/* Code Snippet */}
+                  <div className="surface-recessed rounded-xl overflow-hidden">
+                    <div className="px-3.5 py-2 border-b border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-neutral-400">
+                      <span>example.ts</span>
+                      <span className="text-emerald-400 flex items-center gap-1">
+                        <Play className="w-2.5 h-2.5" /> Executable
+                      </span>
+                    </div>
+                    <pre className="p-4 text-xs font-mono text-neutral-200 overflow-x-auto leading-relaxed">
+                      <code>{`async function loadUserProfile(id: number) {
+  const res = await fetch(\`/api/users/\${id}\`);
+  const user = await res.json();
+  return \`\${user.name} (\${user.role})\`;
+}`}</code>
+                    </pre>
+                    <div className="px-4 py-2.5 bg-[#050609] border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
+                      <span className="text-neutral-500">Output:</span>
+                      <span className="text-emerald-400">&quot;Ada Lovelace (Principal Engineer)&quot;</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs text-neutral-400">
+                      2 guided assignments included in this chapter
+                    </span>
+                    <button
+                      onClick={onStart}
+                      className="text-xs font-semibold text-white hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                    >
+                      <span>Try it yourself</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-5 md:p-6 space-y-4">
+                  <div className="flex items-baseline justify-between border-b border-white/[0.08] pb-3">
+                    <div>
+                      <span className="text-xs font-mono text-neutral-400 block">Assignment Evaluation</span>
+                      <h4 className="text-sm font-semibold text-white mt-0.5">Retry-Safe API Client</h4>
+                    </div>
+                    <div className="text-right font-mono tabular-nums">
+                      <span className="text-2xl font-bold text-emerald-400">94</span>
+                      <span className="text-xs text-neutral-500"> / 100</span>
+                    </div>
+                  </div>
+
+                  <div className="surface-recessed rounded-xl p-4 space-y-2.5 text-xs">
+                    <div className="flex items-start gap-2 text-neutral-200">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>Properly handles HTTP 429 rate-limit responses with exponential backoff.</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-neutral-200">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <span>Clean TypeScript return types and error boundary propagation.</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-xs font-mono text-emerald-400 tabular-nums">+250 XP Awarded</span>
+                    <button
+                      onClick={onStart}
+                      className="text-xs font-semibold text-white hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                    >
+                      <span>Start first assignment</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Asymmetric Bento Capability Grid with Tactile Top Sheen */}
+        <section id="curriculum" className="space-y-6">
+          <div className="max-w-2xl">
+            <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+              Designed for real retention, not passive watching.
+            </h2>
+            <p className="text-sm text-neutral-400 mt-1.5">
+              Every chapter combines clear prose, executable syntax breakdowns, and hands-on coding exercises in a single flow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Marquee Card (col-span-2) */}
+            <div
+              onClick={onStart}
+              className="surface-interactive md:col-span-2 p-7 rounded-2xl cursor-pointer flex flex-col justify-between gap-6"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-mono text-indigo-300/90">
+                  <span>01. Cumulative Curriculum</span>
+                  <BookOpen className="w-4 h-4 text-neutral-400" />
+                </div>
+                <h3 className="text-lg md:text-xl font-bold text-white tracking-tight">
+                  Progressive Chapters That Build on Each Other
+                </h3>
+                <p className="text-sm text-neutral-300/90 leading-relaxed max-w-xl">
+                  Whether you are writing your very first variable or architecting distributed backend services, each chapter references what you learned previously and shows exact code + output side by side.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-mono text-neutral-400">
+                <span>Chapter 1: Core Syntax</span>
+                <span>→</span>
+                <span>Chapter 2: Control Flow</span>
+                <span>→</span>
+                <span>Chapter 3: Functions &amp; State</span>
+                <span>→</span>
+                <span className="text-white">Production Systems</span>
+              </div>
+            </div>
+
+            {/* Secondary Card (col-span-1) */}
+            <div
+              id="workspace"
+              onClick={onStart}
+              className="surface-interactive p-7 rounded-2xl cursor-pointer flex flex-col justify-between gap-6"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-mono text-indigo-300/90">
+                  <span>02. Cloud IDE</span>
+                  <Code2 className="w-4 h-4 text-neutral-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white tracking-tight">
+                  Guided In-Browser Workspace
+                </h3>
+                <p className="text-sm text-neutral-300/90 leading-relaxed">
+                  Open any assignment with pre-loaded starter boilerplate, step-by-step walkthroughs, and progressive hints when you get stuck.
+                </p>
+              </div>
+              <div className="text-xs font-mono text-neutral-400">
+                Single-file &amp; multi-file support
+              </div>
+            </div>
+
+            {/* Bottom Full-Width Card (col-span-3) */}
+            <div
+              id="reviews"
+              onClick={onStart}
+              className="surface-interactive md:col-span-3 p-7 rounded-2xl cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-6"
+            >
+              <div className="space-y-2 max-w-2xl">
+                <div className="flex items-center gap-2 text-xs font-mono text-indigo-300/90">
+                  <Layers className="w-4 h-4 text-neutral-400" />
+                  <span>03. Automated Code Review &amp; Pitfall Detection</span>
+                </div>
+                <h3 className="text-lg font-bold text-white tracking-tight">
+                  Immediate Line-by-Line Technical Feedback
+                </h3>
+                <p className="text-sm text-neutral-300/90 leading-relaxed">
+                  Every chapter highlights side-by-side <span className="text-white font-medium">Incorrect vs. Correct</span> code patterns before you start coding, and grades your submission on logic, edge cases, and code structure.
+                </p>
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onStart();
+                }}
+                className="btn-primary px-5 py-2.5 rounded-lg text-xs font-semibold flex items-center gap-2 self-start md:self-center whitespace-nowrap shrink-0"
+              >
+                <span>Build Your First Track</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Minimal Footer */}
+      <footer className="border-t border-white/[0.08] py-6 px-6 text-xs text-neutral-500">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+          <span>SimSKILLS Engineering Platform</span>
+          <span className="font-mono text-neutral-500">Interactive CS &amp; Software Engineering</span>
+        </div>
+      </footer>
+    </div>
+  );
 };
 
 export default Hero;

@@ -1,8 +1,6 @@
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
-
-
+import { initializeApp, FirebaseApp } from "firebase/app";
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, Auth } from "firebase/auth";
+import { initializeFirestore, Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,17 +11,33 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-const app = initializeApp(firebaseConfig);
+export const isFirebaseConfigured = Boolean(
+    firebaseConfig.apiKey &&
+    firebaseConfig.apiKey !== "undefined" &&
+    firebaseConfig.projectId &&
+    firebaseConfig.projectId !== "undefined"
+);
 
-export const auth = getAuth(app);
+let app: FirebaseApp | null = null;
+let authInstance: Auth | null = null;
+let dbInstance: Firestore | null = null;
 
-// Initialize Firestore with settings to force long polling if websockets are blocked
-// This often fixes the "client is offline" error on some networks/browsers
-export const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-}, "skillstorage");
+if (isFirebaseConfigured) {
+    try {
+        app = initializeApp(firebaseConfig);
+        authInstance = getAuth(app);
+        dbInstance = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+        }, "skillstorage");
+    } catch (error) {
+        console.warn("Firebase initialization skipped or failed, falling back to local storage:", error);
+    }
+}
+
+export const auth = authInstance as Auth;
+export const db = dbInstance as Firestore;
 
 export const googleProvider = new GoogleAuthProvider();
-
 export const githubProvider = new GithubAuthProvider();
+
 
